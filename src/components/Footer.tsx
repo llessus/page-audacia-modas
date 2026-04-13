@@ -1,23 +1,61 @@
+import { Instagram, MapPin } from 'lucide-react';
 import logo from '../assets/logo.png';
 
 export function Footer() {
   return (
-    <footer className="py-10 border-t border-white/10 z-10 relative bg-black/10">
-      <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
-        
-        <div className="flex items-center gap-2 opacity-80">
-           {/* Logo */}
-           <img src={logo} alt="Audácia Modas" className="h-10" /> 
+    <footer className="bg-audacia-rose-dark pt-16 pb-8 border-t border-audacia-gold/20 relative z-10">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12 items-center text-center md:text-left">
+
+          {/* Coluna 1: Logo & Slogan */}
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <img src={logo} alt="Audácia Modas" className="h-14 md:h-16 object-contain opacity-90" />
+            <p className="text-white/70 font-light text-sm max-w-xs leading-relaxed">
+              A elegância que você merece, com o atendimento exclusivo que você confia.
+            </p>
+          </div>
+
+          {/* Coluna 2: Endereço Físico (Crucial para SEO Local) */}
+          <div className="flex flex-col items-center md:items-start gap-4 md:mx-auto">
+            <h4 className="text-audacia-gold font-serif text-xl tracking-wide">Nossa Loja</h4>
+            <a 
+              href="https://maps.app.goo.gl/WAUnjuntNJrFP35W6" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="group flex items-start gap-3 text-white/80 hover:text-white transition-colors text-sm text-left"
+            >
+              <MapPin className="w-5 h-5 text-audacia-gold shrink-0 group-hover:-translate-y-1 transition-transform duration-300" />
+              <span className="leading-relaxed">
+                Santa Maria Norte - DF<br/>
+                <span className="text-white/50 text-xs">Visite nosso espaço físico</span>
+              </span>
+            </a>
+          </div>
+
+          {/* Coluna 3: Redes Sociais */}
+          <div className="flex flex-col items-center md:items-end gap-4">
+            <h4 className="text-audacia-gold font-serif text-xl tracking-wide">Acompanhe</h4>
+            <a 
+              href="https://www.instagram.com/lojaaudaciamoda?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="group flex items-center gap-3 text-white/80 hover:text-audacia-gold transition-colors text-sm"
+            >
+              <span className="font-medium tracking-wide">@lojaaudaciamoda</span>
+              <div className="p-2.5 rounded-full border border-white/20 group-hover:border-audacia-gold group-hover:bg-audacia-gold/10 transition-all duration-300">
+                <Instagram className="w-4 h-4" />
+              </div>
+            </a>
+          </div>
+
         </div>
 
-        <div className="text-white/60 font-light text-sm text-center md:text-left">
-          &copy; 2026 Audácia Modas. Todos os direitos reservados.
-        </div>
-
-        <div className="flex items-center gap-4">
-          <a href="https://www.instagram.com/lojaaudaciamoda?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="text-audacia-gold hover:text-white transition-colors duration-300 p-2 rounded-full hover:bg-white/5">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-          </a>
+        {/* Linha de Copyright */}
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/50 font-light tracking-wider">
+          <p>&copy; {new Date().getFullYear()} Audácia Modas. Todos os direitos reservados.</p>
+          <p className="flex items-center gap-1">
+            Desenvolvido por <a href="https://github.com/llessus" target="_blank" rel="noopener noreferrer" className="text-audacia-gold hover:text-white transition-colors font-medium">Você</a>
+          </p>
         </div>
       </div>
     </footer>

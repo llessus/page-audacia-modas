@@ -1,31 +1,92 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer utilities {
+  /* Glassmorphism Refinado (Fundo Claro) */
   .glassmorphism {
-    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl;
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(90,66,80,0.37)];
   }
   
+  /* Glassmorphism Premium (Com borda dourada para áreas de destaque) */
+  .glassmorphism-gold {
+    @apply bg-audacia-rose-dark/40 backdrop-blur-md border border-audacia-gold/30 shadow-gold-glow;
+  }
+  
+  /* Texto Metálico Animado (Reflexo de luz) */
   .text-gold-gradient {
-    background: linear-gradient(135deg, #D4AF37 0%, #F5DF7C 50%, #D4AF37 100%);
+    background: linear-gradient(135deg, #BF953F 20%, #FCF6BA 40%, #B38728 60%, #FBF5B7 80%, #AA771C 100%);
+    background-size: 200% auto;
+    color: transparent;
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     background-clip: text;
+    animation: textShine 5s linear infinite;
+  }
+
+  /* Efeito de brilho passando no botão */
+  .btn-shimmer {
+    @apply relative overflow-hidden;
+  }
+  
+  .btn-shimmer::after {
+    content: '';
+    @apply absolute top-0 left-[-100%] w-[50%] h-full;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmerEffect 2.5s infinite;
+  }
+}
+
+/* Keyframes nativos do CSS para fluidez máxima */
+@keyframes textShine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes shimmerEffect {
+  100% {
+    left: 200%;
   }
 }
 
 html {
   scroll-behavior: smooth;
+  background-color: #A38692; /* Fundo base da logo (Rose Light) */
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  /* Antialiasing para as fontes ficarem "crisp" e cor de seleção personalizada */
+  @apply text-white font-sans antialiased selection:bg-audacia-gold selection:text-white;
 }
 
 #root {
   width: 100%;
+  overflow-x: hidden;
+}
+
+/* =========================================
+   SCROLLBAR PREMIUM CUSTOMIZADA
+   ========================================= */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #A38692; /* Fundo exato da logo */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D4AF37; /* Dourado base */
+  border-radius: 10px;
+  /* Isso cria um espaço entre a barra e a borda da tela */
+  border: 3px solid #A38692; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #F5DF7C; /* Brilha ao passar o mouse */
 }
