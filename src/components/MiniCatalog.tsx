@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import product1 from '../assets/product_1.png';
 import product2 from '../assets/product_2.png';
 import product3 from '../assets/product_3.png';
+import { siteConfig } from '../config/siteConfig';
 
 interface Product {
   id: number;
@@ -72,7 +73,7 @@ export function MiniCatalog() {
                 
                 {/* Advanced Ghost Button */}
                 <a 
-                  href={`https://wa.me/5561998851403?text=${encodeURIComponent(`Olá! Vi o catálogo e tenho interesse no ${product.name}`)}`}
+                  href={`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(`Olá! Vi o catálogo e tenho interesse no ${product.name}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto relative overflow-hidden px-6 py-3 rounded-full border border-audacia-gold/40 text-audacia-gold font-medium text-sm tracking-wider transition-all duration-300 group/btn hover:border-audacia-gold text-center"

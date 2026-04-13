@@ -1,6 +1,7 @@
 import { MessageCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import logo from '../assets/logo.png';
+import { siteConfig } from '../config/siteConfig';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -26,14 +27,14 @@ export function Header() {
         <div className="flex items-center gap-2">
           <img 
             src={logo} 
-            alt="Audácia Modas" 
+            alt={siteConfig.nomeLoja} 
             className={`object-contain transition-all duration-500 ${isScrolled ? 'h-10' : 'h-14 md:h-16'}`} 
           />
         </div>
 
         {/* WhatsApp Button */}
         <a
-          href="https://wa.me/5561998851403?text=Ol%C3%A1!%20Vi%20a%20landing%20page%20da%20Audácia%20Modas%20e%20quero%20falar%20com%20o%20atendimento."
+          href={`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(`Olá! Vi a landing page da ${siteConfig.nomeLoja} e quero falar com o atendimento.`)}`}
           target="_blank"
           rel="noopener noreferrer"
           className={`group flex items-center gap-2 px-6 py-2.5 rounded-full border transition-all duration-300 ${

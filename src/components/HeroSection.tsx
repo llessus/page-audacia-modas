@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import heroImg from '../assets/product_3.png';
+import { siteConfig } from '../config/siteConfig';
 
 export function HeroSection() {
   return (
@@ -16,9 +17,9 @@ export function HeroSection() {
           <motion.h1 
             className="text-5xl md:text-7xl font-serif font-bold mb-6 leading-[1.1] tracking-tight"
           >
-            <span className="text-gold-gradient block mb-2">Audácia Modas:</span>
-            <span className="text-white font-light">Vista sua</span><br/>
-            <span className="text-white">Essência.</span>
+            <span className="text-gold-gradient block mb-2">{siteConfig.hero.tituloParte1}</span>
+            <span className="text-white font-light">{siteConfig.hero.tituloParte2}</span><br/>
+            <span className="text-white">{siteConfig.hero.tituloParte3}</span>
           </motion.h1>
           
           <motion.p 
@@ -27,7 +28,7 @@ export function HeroSection() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            Descubra a coleção exclusiva que combina elegância contemporânea com o toque clássico que você merece. Vista-se de confiança.
+            {siteConfig.hero.subtitulo}
           </motion.p>
           
           <motion.a 
@@ -59,7 +60,7 @@ export function HeroSection() {
             <div className="relative p-2 rounded-3xl glassmorphism-gold">
               <img 
                 src={heroImg} 
-                alt="Modelo usando roupa Audácia Modas" 
+                alt={`Modelo usando roupa ${siteConfig.nomeLoja}`} 
                 className="relative max-w-full h-auto max-h-[70vh] rounded-2xl object-cover"
               />
               {/* Subtle overlay gradient to blend image with the rose theme */}

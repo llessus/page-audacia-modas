@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
+import { siteConfig } from '../config/siteConfig';
 
 export function WhatsAppPurchaseSection() {
   // CONFIGURAÇÃO DO WHATSAPP:
-  const WHATSAPP_NUMBER = "5561998851403"; 
-  const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Oi! Vi a landing page da Audácia Modas e quero falar com a estilista!')}`;
+  const WHATSAPP_NUMBER = siteConfig.whatsappDDIeDDD; 
+  const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Oi! Vi a landing page da ${siteConfig.nomeLoja} e quero falar com a estilista!`)}`;
 
   return (
     <section id="whatsapp-purchase" className="py-24 relative z-10 overflow-hidden">
