@@ -5,6 +5,7 @@ import { HeroSection } from '@/components/HeroSection';
 import { MiniCatalog } from '@/components/MiniCatalog';
 import { WhatsAppPurchaseSection } from '@/components/WhatsAppPurchaseSection';
 import { Footer } from '@/components/Footer';
+import { FloatingWhatsApp } from '@/components/FloatingWhatsApp';
 import { TrustStrip, WaveDividerDown, WaveDividerUp } from '@/components/Decorators';
 import type { Produto } from '@/types/produto';
 
@@ -23,6 +24,7 @@ export function LandingPage({ produtos }: LandingPageProps) {
       <WaveDividerUp />
       <WhatsAppPurchaseSection />
       <Footer />
+      <FloatingWhatsApp />
     </main>
   );
 }

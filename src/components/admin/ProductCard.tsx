@@ -104,42 +104,32 @@ export function ProductCard({ produto }: ProductCardProps) {
 
           {/* Actions */}
           <div className="flex gap-2 mt-3">
-            {/* Toggle Status */}
+            {/* Status Switch */}
             <button
               onClick={handleToggle}
               disabled={isToggling || isDeleting}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-300 border disabled:opacity-40 disabled:cursor-not-allowed ${
+              className={`flex-1 flex items-center justify-between px-4 py-2.5 rounded-xl border transition-all duration-300 group/switch disabled:opacity-40 min-h-[44px] ${
                 isDisponivel
-                  ? 'border-amber-500/30 text-amber-300 hover:bg-amber-500/10'
-                  : 'border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10'
+                  ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10'
+                  : 'bg-red-500/5 border-red-500/20 text-red-400 hover:bg-red-500/10'
               }`}
             >
-              {isToggling ? (
-                <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-              ) : isDisponivel ? (
-                <>
-                  <ToggleRight className="w-3.5 h-3.5" />
-                  Esgotar
-                </>
-              ) : (
-                <>
-                  <ToggleLeft className="w-3.5 h-3.5" />
-                  Disponibilizar
-                </>
-              )}
+              <span className="text-[10px] font-bold uppercase tracking-widest pointer-events-none">
+                {isToggling ? '...' : isDisponivel ? 'Disponível' : 'Esgotado'}
+              </span>
+              <div className={`relative w-8 h-4 rounded-full transition-colors duration-300 pointer-events-none ${isDisponivel ? 'bg-emerald-500' : 'bg-red-500/40'}`}>
+                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-300 ${isDisponivel ? 'left-[1.125rem]' : 'left-0.5'}`} />
+              </div>
             </button>
 
             {/* Edit */}
             <button
               onClick={() => setShowEdit(true)}
               disabled={isDeleting}
-              className="px-3 py-2.5 rounded-xl border border-audacia-gold/30 text-audacia-gold hover:bg-audacia-gold/10 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="p-2.5 rounded-xl border border-white/10 text-white/40 hover:text-audacia-gold hover:border-audacia-gold/40 transition-all duration-300 disabled:opacity-40 min-w-[42px] min-h-[44px] flex items-center justify-center"
               title="Editar produto"
             >
-              <Pencil className="w-3.5 h-3.5" />
+              <Pencil className="w-4 h-4" />
             </button>
 
             {/* Delete */}
@@ -147,30 +137,23 @@ export function ProductCard({ produto }: ProductCardProps) {
               <button
                 onClick={() => setShowConfirm(true)}
                 disabled={isDeleting}
-                className="px-3 py-2.5 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-2.5 rounded-xl border border-white/10 text-red-400/50 hover:text-red-400 hover:border-red-500/40 transition-all duration-300 disabled:opacity-40 min-w-[42px] min-h-[44px] flex items-center justify-center"
                 title="Excluir produto"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-4 h-4" />
               </button>
             ) : (
-              <div className="flex gap-1">
+              <div className="flex gap-1 animate-in fade-in slide-in-from-right-2">
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="px-3 py-2.5 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-bold hover:bg-red-500/30 transition-all duration-300 disabled:opacity-40 flex items-center gap-1"
+                  className="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-[10px] font-bold hover:bg-red-500/30 transition-all min-h-[44px]"
                 >
-                  {isDeleting ? (
-                    <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                  ) : (
-                    'Sim'
-                  )}
+                  {isDeleting ? '...' : 'Sim'}
                 </button>
                 <button
                   onClick={() => setShowConfirm(false)}
-                  className="px-3 py-2.5 rounded-xl border border-white/10 text-white/60 text-xs hover:bg-white/5 transition-all duration-300"
+                  className="px-3 py-2 rounded-lg bg-white/5 text-white/40 text-[10px] hover:bg-white/10 transition-all min-h-[44px]"
                 >
                   Não
                 </button>
