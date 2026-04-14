@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyJWT } from '@/lib/auth';
 
-export function middleware(request: NextRequest) {
-  // 1. Tenta recuperar o cookie de sessão e valida o valor
-  const session = request.cookies.get('admin_session');
-  const isAuthenticated = session?.value === 'authenticated';
+export async function middleware(request: NextRequest) {
+  // 1. Tenta recuperar o cookie de sessão e valida a assinatura JWT
+  const token = request.cookies.get('admin_session')?.value;
+  const isAuthenticated = token ? await verifyJWT(token) : false;
   
   // 2. Define as rotas que estamos a monitorizar
   const isLoginPage = request.nextUrl.pathname === '/admin';

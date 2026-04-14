@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getProdutos, getHeroImage } from '@/lib/db';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
+import { verifyJWT } from '@/lib/auth';
 import type { Metadata } from 'next';
 import type { Produto } from '@/types/produto';
 
@@ -21,11 +22,12 @@ async function logoutAction() {
 }
 
 export default async function DashboardPage() {
-  // Verificar sessão
+  // Verificar sessão via JWT
   const cookieStore = await cookies();
-  const session = cookieStore.get('admin_session')?.value;
+  const token = cookieStore.get('admin_session')?.value;
+  const isAuthenticated = token ? await verifyJWT(token) : false;
 
-  if (session !== 'authenticated') {
+  if (!isAuthenticated) {
     redirect('/admin');
   }
 

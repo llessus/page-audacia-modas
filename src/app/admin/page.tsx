@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { AdminLogin } from '@/components/admin/AdminLogin';
+import { signJWT, verifyJWT } from '@/lib/auth';
 
 export const metadata: Metadata = {
   title: 'Login | Audácia Modas',
@@ -19,8 +20,11 @@ async function loginAction(formData: FormData) {
     redirect('/admin?error=invalid');
   }
 
+  // Gera token assinado (JWT)
+  const token = await signJWT();
+
   const cookieStore = await cookies();
-  cookieStore.set('admin_session', 'authenticated', {
+  cookieStore.set('admin_session', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -36,10 +40,12 @@ export default async function AdminLoginPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  // Se já está autenticado, redireciona pro dashboard
+  // Se já está autenticado com um token válido, redireciona pro dashboard
   const cookieStore = await cookies();
-  const session = cookieStore.get('admin_session')?.value;
-  if (session === 'authenticated') {
+  const token = cookieStore.get('admin_session')?.value;
+  const isAuthenticated = token ? await verifyJWT(token) : false;
+
+  if (isAuthenticated) {
     redirect('/admin/dashboard');
   }
 
