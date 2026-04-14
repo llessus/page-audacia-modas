@@ -250,3 +250,62 @@ export async function updateProduct(formData: FormData): Promise<ActionResponse>
     return { success: false, message: 'Erro interno ao atualizar produto. Tente novamente.' };
   }
 }
+
+/**
+ * Atualiza a imagem principal (Hero) da loja.
+ * Persiste a nova URL no banco e a nova imagem no Vercel Blob.
+ */
+export async function updateHeroImage(formData: FormData): Promise<ActionResponse> {
+  try {
+    const arquivo = formData.get('imagem') as File | null;
+
+    if (!arquivo || arquivo.size === 0) {
+      return { success: false, message: 'Nenhuma nova imagem selecionada.' };
+    }
+
+    if (arquivo.size > 5 * 1024 * 1024) {
+      return { success: false, message: 'A imagem deve ter no máximo 5MB.' };
+    }
+
+    // Tentar pegar URL antiga para deletar
+    const { rows: configRows } = await sql`
+      SELECT valor FROM config_site WHERE chave = 'hero_image' LIMIT 1
+    `;
+    const antigaUrl = configRows[0]?.valor;
+
+    // Fazer upload da nova imagem
+    const blob = await put(`hero/${Date.now()}-${arquivo.name}`, arquivo, {
+      access: 'public',
+    });
+
+    // Salvar ou atualizar no banco
+    await sql`
+      INSERT INTO config_site (chave, valor)
+      VALUES ('hero_image', ${blob.url})
+      ON CONFLICT (chave)
+      DO UPDATE SET valor = EXCLUDED.valor
+    `;
+
+    // Deletar a imagem antiga do Blob APENAS se for do Vercel Blob (evita deletar arquivos locais ou URLs externas q n podemos deletar)
+    if (antigaUrl && antigaUrl.includes('vercel-storage.com')) {
+      try {
+        await del(antigaUrl);
+      } catch (blobError) {
+        console.warn('[updateHeroImage] Falha ao deletar blob antigo (Hero):', blobError);
+      }
+    }
+
+    // Revalidar rotas
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/');
+
+    return {
+      success: true,
+      message: 'Foto de entrada atualizada com sucesso!',
+    };
+
+  } catch (error) {
+    console.error('[updateHeroImage] Erro:', error);
+    return { success: false, message: 'Erro ao atualizar a foto de entrada.' };
+  }
+}

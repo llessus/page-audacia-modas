@@ -4,7 +4,11 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { siteConfig } from '@/config/siteConfig';
 
-export function HeroSection() {
+interface HeroSectionProps {
+  heroImage: string;
+}
+
+export function HeroSection({ heroImage }: HeroSectionProps) {
   return (
     <section className="relative min-h-screen flex items-center pt-24 pb-12 overflow-hidden">
       <div className="container mx-auto px-4 md:px-8 grid md:grid-cols-2 gap-12 items-center">
@@ -61,7 +65,7 @@ export function HeroSection() {
             {/* Image with Glassmorphism Frame */}
             <div className="relative p-2 rounded-3xl glassmorphism-gold">
               <Image 
-                src="/images/product_3.png"
+                src={heroImage}
                 alt={`Modelo usando roupa ${siteConfig.nomeLoja}`} 
                 width={600}
                 height={800}

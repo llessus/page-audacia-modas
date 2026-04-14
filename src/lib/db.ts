@@ -28,3 +28,15 @@ export async function getProdutoById(id: string): Promise<Produto | null> {
   `;
   return rows[0] ?? null;
 }
+
+export async function getHeroImage(): Promise<string> {
+  try {
+    const { rows } = await sql`
+      SELECT valor FROM config_site WHERE chave = 'hero_image' LIMIT 1
+    `;
+    return rows[0]?.valor || '/images/product_3.png';
+  } catch (error) {
+    // Retorna fallback caso a tabela não exista ainda ou haja outro erro
+    return '/images/product_3.png';
+  }
+}

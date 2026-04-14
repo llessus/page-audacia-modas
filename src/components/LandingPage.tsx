@@ -11,13 +11,14 @@ import type { Produto } from '@/types/produto';
 
 interface LandingPageProps {
   produtos: Produto[];
+  heroImage: string;
 }
 
-export function LandingPage({ produtos }: LandingPageProps) {
+export function LandingPage({ produtos, heroImage }: LandingPageProps) {
   return (
     <main className="w-full relative overflow-x-hidden">
       <Header />
-      <HeroSection />
+      <HeroSection heroImage={heroImage} />
       <TrustStrip />
       <WaveDividerDown />
       <MiniCatalog produtosIniciais={produtos} />

@@ -1,6 +1,7 @@
 'use client';
 
 import { AdminForm } from '@/components/admin/AdminForm';
+import { HeroEditForm } from '@/components/admin/HeroEditForm';
 import { ProductCard } from '@/components/admin/ProductCard';
 import { Package, LogOut, LayoutDashboard, ShoppingBag, AlertTriangle } from 'lucide-react';
 import type { Produto } from '@/types/produto';
@@ -8,9 +9,10 @@ import type { Produto } from '@/types/produto';
 interface AdminDashboardProps {
   produtos: Produto[];
   logoutAction: () => Promise<void>;
+  heroImage: string;
 }
 
-export function AdminDashboard({ produtos, logoutAction }: AdminDashboardProps) {
+export function AdminDashboard({ produtos, logoutAction, heroImage }: AdminDashboardProps) {
   const totalProdutos = produtos.length;
   const disponiveis = produtos.filter(p => p.status === 'disponivel').length;
   const esgotados = totalProdutos - disponiveis;
@@ -86,8 +88,9 @@ export function AdminDashboard({ produtos, logoutAction }: AdminDashboardProps) 
 
         {/* Two-column layout: Form + Products */}
         <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-8">
-          {/* Left: Upload Form */}
-          <div className="lg:sticky lg:top-24 lg:self-start">
+          {/* Left: Upload Form & Settings */}
+          <div className="lg:sticky lg:top-24 lg:self-start space-y-6">
+            <HeroEditForm currentHeroImage={heroImage} />
             <AdminForm />
           </div>
 

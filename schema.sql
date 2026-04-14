@@ -14,3 +14,10 @@ CREATE TABLE IF NOT EXISTS produtos (
 
 -- Índice para listar apenas produtos disponíveis no catálogo público
 CREATE INDEX IF NOT EXISTS idx_produtos_status ON produtos (status);
+
+-- Tabela para configurações gerais do site (Ex: Foto da Hero Section)
+CREATE TABLE IF NOT EXISTS config_site (
+  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  chave      TEXT UNIQUE NOT NULL,
+  valor      TEXT NOT NULL
+);
