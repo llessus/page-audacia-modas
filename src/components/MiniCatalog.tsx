@@ -1,8 +1,8 @@
+'use client';
+
 import { motion } from 'framer-motion';
-import product1 from '../assets/product_1.png';
-import product2 from '../assets/product_2.png';
-import product3 from '../assets/product_3.png';
-import { siteConfig } from '../config/siteConfig';
+import Image from 'next/image';
+import { siteConfig } from '@/config/siteConfig';
 
 interface Product {
   id: number;
@@ -12,9 +12,9 @@ interface Product {
 }
 
 const products: Product[] = [
-  { id: 1, name: 'Vestido Dourado Verão', price: 'R$ 389,90', image: product1 },
-  { id: 2, name: 'Conjunto Alfaiataria Nude', price: 'R$ 459,90', image: product2 },
-  { id: 3, name: 'Longo Rosa Imperial', price: 'R$ 899,90', image: product3 },
+  { id: 1, name: 'Vestido Dourado Verão', price: 'R$ 389,90', image: '/images/product_1.png' },
+  { id: 2, name: 'Conjunto Alfaiataria Nude', price: 'R$ 459,90', image: '/images/product_2.png' },
+  { id: 3, name: 'Longo Rosa Imperial', price: 'R$ 899,90', image: '/images/product_3.png' },
 ];
 
 export function MiniCatalog() {
@@ -55,10 +55,12 @@ export function MiniCatalog() {
                 {/* Subtle vignette effect over image */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10 pointer-events-none"></div>
                 
-                <img 
+                <Image 
                   src={product.image} 
                   alt={product.name} 
-                  className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
                 />
               </div>
               

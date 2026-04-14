@@ -1,6 +1,8 @@
+'use client';
+
 import { motion } from 'framer-motion';
-import heroImg from '../assets/product_3.png';
-import { siteConfig } from '../config/siteConfig';
+import Image from 'next/image';
+import { siteConfig } from '@/config/siteConfig';
 
 export function HeroSection() {
   return (
@@ -58,10 +60,13 @@ export function HeroSection() {
             
             {/* Image with Glassmorphism Frame */}
             <div className="relative p-2 rounded-3xl glassmorphism-gold">
-              <img 
-                src={heroImg} 
+              <Image 
+                src="/images/product_3.png"
                 alt={`Modelo usando roupa ${siteConfig.nomeLoja}`} 
+                width={600}
+                height={800}
                 className="relative max-w-full h-auto max-h-[70vh] rounded-2xl object-cover"
+                priority
               />
               {/* Subtle overlay gradient to blend image with the rose theme */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-audacia-rose-dark/40 to-transparent pointer-events-none"></div>

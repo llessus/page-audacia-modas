@@ -1,6 +1,8 @@
+'use client';
+
 import { Instagram, MapPin } from 'lucide-react';
-import logo from '../assets/logo.png';
-import { siteConfig } from '../config/siteConfig';
+import Image from 'next/image';
+import { siteConfig } from '@/config/siteConfig';
 
 export function Footer() {
   return (
@@ -10,7 +12,13 @@ export function Footer() {
 
           {/* Coluna 1: Logo & Slogan */}
           <div className="flex flex-col items-center md:items-start gap-4">
-            <img src={logo} alt={siteConfig.nomeLoja} className="h-14 md:h-16 object-contain opacity-90" />
+            <Image 
+              src="/images/logo.png" 
+              alt={siteConfig.nomeLoja} 
+              width={160} 
+              height={64} 
+              className="h-14 md:h-16 w-auto object-contain opacity-90" 
+            />
             <p className="text-white/70 font-light text-sm max-w-xs leading-relaxed">
               A elegância que você merece, com o atendimento exclusivo que você confia.
             </p>

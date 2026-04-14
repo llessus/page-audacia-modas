@@ -1,3 +1,5 @@
+'use client';
+
 import { motion } from 'framer-motion';
 
 // Separadores em onda SVG para dividir seções com suavidade

@@ -1,6 +1,8 @@
+'use client';
+
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
-import { siteConfig } from '../config/siteConfig';
+import { siteConfig } from '@/config/siteConfig';
 
 export function WhatsAppPurchaseSection() {
   // CONFIGURAÇÃO DO WHATSAPP:
