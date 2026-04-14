@@ -152,3 +152,101 @@ export async function toggleStatus(id: string): Promise<ActionResponse> {
     return { success: false, message: 'Erro interno ao alterar status.' };
   }
 }
+
+/**
+ * Atualiza um produto existente.
+ * Só faz upload de nova imagem se o admin selecionou um arquivo novo,
+ * economizando o limite do Vercel Blob.
+ */
+export async function updateProduct(formData: FormData): Promise<ActionResponse> {
+  try {
+    const id = formData.get('id') as string | null;
+    const nome = formData.get('nome') as string | null;
+    const precoRaw = formData.get('preco') as string | null;
+    const categoriaSelect = formData.get('categoria') as string | null;
+    const novaCategoria = formData.get('novaCategoria') as string | null;
+    const descricao = formData.get('descricao') as string | null;
+    const arquivo = formData.get('imagem') as File | null;
+    const imagemAtual = formData.get('imagemAtual') as string | null;
+
+    // --- Validações ---
+    if (!id) {
+      return { success: false, message: 'ID do produto é obrigatório.' };
+    }
+
+    if (!nome || nome.trim().length === 0) {
+      return { success: false, message: 'O nome do produto é obrigatório.' };
+    }
+
+    if (!precoRaw || isNaN(Number(precoRaw)) || Number(precoRaw) <= 0) {
+      return { success: false, message: 'Informe um preço válido maior que zero.' };
+    }
+
+    const preco = Number(precoRaw);
+
+    // Determinar categoria
+    const categoria = (novaCategoria && novaCategoria.trim().length > 0)
+      ? novaCategoria.trim()
+      : (categoriaSelect || 'Destaques da Semana');
+
+    const descricaoFinal = descricao && descricao.trim().length > 0
+      ? descricao.trim()
+      : null;
+
+    // --- Gerenciar imagem ---
+    let imagemUrl = imagemAtual || '';
+
+    // Só faz upload se o admin selecionou um arquivo novo (size > 0)
+    const temNovaImagem = arquivo && arquivo.size > 0;
+
+    if (temNovaImagem) {
+      // Validar tamanho
+      if (arquivo.size > 4.5 * 1024 * 1024) {
+        return { success: false, message: 'A imagem deve ter no máximo 4.5MB.' };
+      }
+
+      // Upload da nova imagem
+      const blob = await put(`produtos/${Date.now()}-${arquivo.name}`, arquivo, {
+        access: 'public',
+      });
+      imagemUrl = blob.url;
+
+      // Deletar a imagem antiga do Blob para liberar espaço
+      if (imagemAtual) {
+        try {
+          await del(imagemAtual);
+        } catch (blobError) {
+          console.warn('[updateProduct] Falha ao deletar blob antigo:', blobError);
+        }
+      }
+    }
+
+    // --- UPDATE no Postgres ---
+    const { rows } = await sql`
+      UPDATE produtos
+      SET nome = ${nome.trim()},
+          preco = ${preco},
+          imagem_url = ${imagemUrl},
+          categoria = ${categoria},
+          descricao = ${descricaoFinal}
+      WHERE id = ${id}
+      RETURNING id, nome, preco, imagem_url, categoria, descricao, status, created_at
+    `;
+
+    if (rows.length === 0) {
+      return { success: false, message: 'Produto não encontrado.' };
+    }
+
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/');
+
+    return {
+      success: true,
+      message: `Produto "${nome.trim()}" atualizado com sucesso!`,
+      produto: rows[0] as unknown as Produto,
+    };
+  } catch (error) {
+    console.error('[updateProduct] Erro:', error);
+    return { success: false, message: 'Erro interno ao atualizar produto. Tente novamente.' };
+  }
+}
