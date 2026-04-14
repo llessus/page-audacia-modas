@@ -159,7 +159,7 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
                       </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 max-w-6xl mx-auto">
+                    <div className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-4 pb-8 md:pb-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-12 max-w-6xl mx-auto md:overflow-x-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4 md:px-0">
                       {categoria.produtos.map((product, index) => {
                         const isEsgotado = product.status === 'esgotado';
                         
@@ -167,7 +167,7 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
                           <motion.div
                             key={product.id}
                             layout
-                            className={`relative p-3 rounded-[2rem] glassmorphism hover:glassmorphism-gold transition-all duration-500 group flex flex-col cursor-pointer ${
+                            className={`relative p-3 rounded-[2rem] glassmorphism hover:glassmorphism-gold transition-all duration-500 group flex flex-col cursor-pointer w-[75vw] flex-shrink-0 snap-center md:w-auto md:flex-shrink-1 ${
                               isEsgotado ? 'opacity-60 saturate-[0.4]' : ''
                             }`}
                             initial={{ opacity: 0, scale: 0.9 }}
