@@ -3,21 +3,19 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { siteConfig } from '@/config/siteConfig';
+import type { Produto } from '@/types/produto';
 
-interface Product {
-  id: number;
-  name: string;
-  price: string;
-  image: string;
+interface MiniCatalogProps {
+  produtosIniciais: Produto[];
 }
 
-const products: Product[] = [
-  { id: 1, name: 'Vestido Dourado Verão', price: 'R$ 389,90', image: '/images/product_1.png' },
-  { id: 2, name: 'Conjunto Alfaiataria Nude', price: 'R$ 459,90', image: '/images/product_2.png' },
-  { id: 3, name: 'Longo Rosa Imperial', price: 'R$ 899,90', image: '/images/product_3.png' },
-];
+export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
+  // Se não houver produtos no banco, podemos mostrar os estáticos ou nada. 
+  // Mas agora vamos priorizar os do banco que vieram via props.
+  const displayProducts = produtosIniciais.length > 0 ? produtosIniciais : [];
 
-export function MiniCatalog() {
+  if (displayProducts.length === 0) return null;
+
   return (
     <section id="catalogo" className="py-24 relative z-10">
       <div className="container mx-auto px-4 md:px-8">
@@ -40,7 +38,7 @@ export function MiniCatalog() {
 
         {/* Catalog Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 max-w-6xl mx-auto">
-          {products.map((product, index) => (
+          {displayProducts.map((product, index) => (
             <motion.div
               key={product.id}
               className="relative p-3 rounded-[2rem] glassmorphism hover:glassmorphism-gold transition-all duration-500 group flex flex-col"
@@ -56,8 +54,8 @@ export function MiniCatalog() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10 pointer-events-none"></div>
                 
                 <Image 
-                  src={product.image} 
-                  alt={product.name} 
+                  src={product.imagem_url} 
+                  alt={product.nome} 
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
@@ -67,15 +65,15 @@ export function MiniCatalog() {
               {/* Product Info */}
               <div className="px-4 pb-4 text-center flex flex-col flex-grow">
                 <h3 className="font-serif text-xl mb-1 text-white group-hover:text-audacia-gold-light transition-colors duration-300">
-                  {product.name}
+                  {product.nome}
                 </h3>
                 <p className="font-sans font-medium text-audacia-gold mb-6">
-                  {product.price}
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.preco)}
                 </p>
                 
                 {/* Advanced Ghost Button */}
                 <a 
-                  href={`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(`Olá! Vi o catálogo e tenho interesse no ${product.name}`)}`}
+                  href={`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(`Olá! Vi o catálogo e tenho interesse no ${product.nome}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto relative overflow-hidden px-6 py-3 rounded-full border border-audacia-gold/40 text-audacia-gold font-medium text-sm tracking-wider transition-all duration-300 group/btn hover:border-audacia-gold text-center"
