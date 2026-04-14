@@ -1,73 +1,44 @@
-# React + TypeScript + Vite
+# 👗 Audácia Modas - Catálogo Digital Inteligente
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sistema Fullstack desenvolvido para a loja **Audácia Modas**, focado em automação de catálogo, gestão de estoque simplificada e conversão direta via WhatsApp.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Tecnologías Utilizadas
 
-## React Compiler
+Este projeto foi construído utilizando as tecnologias mais modernas do ecossistema Web:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* **Framework:** [Next.js 15+](https://nextjs.org/) (App Router)
+* **Linguagem:** TypeScript
+* **Estilização:** Tailwind CSS (Arquitetura Glassmorphism)
+* **Banco de Dados:** PostgreSQL (Hospedado via [Neon.tech](https://neon.tech/))
+* **Storage:** Vercel Blob (Gerenciamento de imagens em nuvem)
+* **Deploy:** Vercel (Edge Computing)
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠️ Funcionalidades Principais
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 📱 Para o Cliente (Landing Page)
+* **Catálogo Dinâmico:** Listagem de produtos organizada automaticamente por categorias (Frios, Vestidos, Tops, etc.).
+* **Interface Premium:** Design responsivo otimizado para dispositivos móveis (iPhone/Android).
+* **Conversão Direta:** Botão de compra que gera automaticamente uma mensagem personalizada para o WhatsApp da loja.
+* **Modal de Detalhes:** Visualização ampliada do produto com descrições detalhadas.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 🔐 Para o Admin (Dashboard)
+* **Gestão de Inventário:** Interface CRUD (Create, Read, Update, Delete) completa.
+* **Upload Inteligente:** Integração direta com a câmera do celular e armazenamento em nuvem.
+* **Categorização em Tempo Real:** Edição de categorias e preços sem necessidade de novo deploy.
+* **Segurança:** Área administrativa protegida via Middleware e autenticação.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🏗️ Arquitetura do Sistema
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+O projeto segue os princípios de **Server-side Rendering (SSR)** para garantir a melhor performance e SEO. O banco de dados está estrategicamente alocado na região `sa-east-1` (São Paulo) para reduzir a latência e garantir uma experiência fluida para usuários no Brasil.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## 👨‍💻 Desenvolvedor
+
+**[Brendon Rusell Mendes]** *Estudante de Ciência da Computação - 4º Semestre* Focado em desenvolvimento Fullstack e arquitetura de sistemas escaláveis.
