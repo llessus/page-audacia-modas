@@ -24,6 +24,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/images/logo.png',
+    apple: '/images/logo.png',
+  },
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    title: 'Audácia',
+    statusBarStyle: 'black-translucent',
+    capable: true,
   },
 };
 
