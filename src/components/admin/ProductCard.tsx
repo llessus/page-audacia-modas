@@ -75,7 +75,7 @@ export function ProductCard({ produto }: ProductCardProps) {
 
       {/* Info */}
       <div className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex items-start justify-between gap-2 mb-2">
           <div>
             <h3 className="font-serif text-white text-base leading-tight mb-1">{produto.nome}</h3>
             <p className="text-audacia-gold font-semibold text-lg">{formattedPrice}</p>
@@ -84,6 +84,20 @@ export function ProductCard({ produto }: ProductCardProps) {
             <Package className="w-4 h-4 text-audacia-gold/60" />
           </div>
         </div>
+
+        {/* Categoria badge */}
+        {produto.categoria && (
+          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wider bg-audacia-gold/10 border border-audacia-gold/20 text-audacia-gold/70 mb-2">
+            {produto.categoria}
+          </span>
+        )}
+
+        {/* Descrição truncada */}
+        {produto.descricao && (
+          <p className="text-white/40 text-xs leading-relaxed line-clamp-2 mb-2">
+            {produto.descricao}
+          </p>
+        )}
 
         {/* Actions */}
         <div className="flex gap-2 mt-3">

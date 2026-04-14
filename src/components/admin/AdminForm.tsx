@@ -2,13 +2,24 @@
 
 import { useState, useRef } from 'react';
 import { uploadProduct } from '@/app/actions';
-import { Camera, Upload, Sparkles, X } from 'lucide-react';
+import { Camera, Upload, Sparkles, X, Tag, ChevronDown, FileText } from 'lucide-react';
 import Image from 'next/image';
+
+const CATEGORIAS_PADRAO = [
+  'Destaques da Semana',
+  'Frios',
+  'Vestidos',
+  'Tops',
+  'Blusinhas',
+  'Shorts',
+  'Acessórios',
+];
 
 export function AdminForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [showNovaCategoria, setShowNovaCategoria] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -32,6 +43,10 @@ export function AdminForm() {
     }
   }
 
+  function handleCategoriaChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setShowNovaCategoria(e.target.value === '__nova__');
+  }
+
   async function handleSubmit(formData: FormData) {
     setIsLoading(true);
     setFeedback(null);
@@ -43,6 +58,7 @@ export function AdminForm() {
         setFeedback({ type: 'success', message: result.message });
         formRef.current?.reset();
         setPreview(null);
+        setShowNovaCategoria(false);
       } else {
         setFeedback({ type: 'error', message: result.message });
       }
@@ -52,6 +68,8 @@ export function AdminForm() {
       setIsLoading(false);
     }
   }
+
+  const inputClass = 'w-full px-4 py-3 rounded-xl bg-white/5 border border-audacia-gold/20 text-white placeholder:text-white/30 focus:outline-none focus:border-audacia-gold/60 focus:ring-1 focus:ring-audacia-gold/30 transition-all duration-300 font-sans text-sm';
 
   return (
     <div className="glassmorphism-gold rounded-[2rem] p-6 md:p-8 relative overflow-hidden">
@@ -90,7 +108,7 @@ export function AdminForm() {
             type="text"
             required
             placeholder="Ex: Vestido Dourado Verão"
-            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-audacia-gold/20 text-white placeholder:text-white/30 focus:outline-none focus:border-audacia-gold/60 focus:ring-1 focus:ring-audacia-gold/30 transition-all duration-300 font-sans text-sm"
+            className={inputClass}
             disabled={isLoading}
           />
         </div>
@@ -112,10 +130,72 @@ export function AdminForm() {
               min="0.01"
               required
               placeholder="389.90"
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/5 border border-audacia-gold/20 text-white placeholder:text-white/30 focus:outline-none focus:border-audacia-gold/60 focus:ring-1 focus:ring-audacia-gold/30 transition-all duration-300 font-sans text-sm"
+              className={`${inputClass} pl-12`}
               disabled={isLoading}
             />
           </div>
+        </div>
+
+        {/* Categoria */}
+        <div>
+          <label htmlFor="product-categoria" className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
+            <span className="flex items-center gap-1.5">
+              <Tag className="w-3.5 h-3.5" />
+              Categoria
+            </span>
+          </label>
+          <div className="relative">
+            <select
+              id="product-categoria"
+              name="categoria"
+              onChange={handleCategoriaChange}
+              className={`${inputClass} appearance-none cursor-pointer pr-10`}
+              disabled={isLoading}
+            >
+              {CATEGORIAS_PADRAO.map((cat) => (
+                <option key={cat} value={cat} className="bg-[#3a2433] text-white">
+                  {cat}
+                </option>
+              ))}
+              <option value="__nova__" className="bg-[#3a2433] text-audacia-gold">
+                + Nova Categoria...
+              </option>
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-audacia-gold/50 pointer-events-none" />
+          </div>
+
+          {/* Input Nova Categoria (condicional) */}
+          {showNovaCategoria && (
+            <div className="mt-3 animate-in fade-in slide-in-from-top-2">
+              <input
+                name="novaCategoria"
+                type="text"
+                placeholder="Digite o nome da nova categoria"
+                className={inputClass}
+                disabled={isLoading}
+                autoFocus
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Descrição */}
+        <div>
+          <label htmlFor="product-descricao" className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
+            <span className="flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5" />
+              Descrição
+              <span className="text-white/30 font-normal">(opcional)</span>
+            </span>
+          </label>
+          <textarea
+            id="product-descricao"
+            name="descricao"
+            rows={3}
+            placeholder="Ex: Tecido leve, ideal para o verão. Disponível nos tamanhos P, M e G."
+            className={`${inputClass} resize-none`}
+            disabled={isLoading}
+          />
         </div>
 
         {/* Upload de Imagem */}

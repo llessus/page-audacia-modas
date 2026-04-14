@@ -14,6 +14,9 @@ export async function uploadProduct(formData: FormData): Promise<ActionResponse>
     const nome = formData.get('nome') as string | null;
     const precoRaw = formData.get('preco') as string | null;
     const arquivo = formData.get('imagem') as File | null;
+    const categoriaSelect = formData.get('categoria') as string | null;
+    const novaCategoria = formData.get('novaCategoria') as string | null;
+    const descricao = formData.get('descricao') as string | null;
 
     // --- Validações rigorosas ---
     if (!nome || nome.trim().length === 0) {
@@ -35,6 +38,15 @@ export async function uploadProduct(formData: FormData): Promise<ActionResponse>
 
     const preco = Number(precoRaw);
 
+    // Determinar categoria: prioriza "Nova Categoria" se preenchida
+    const categoria = (novaCategoria && novaCategoria.trim().length > 0)
+      ? novaCategoria.trim()
+      : (categoriaSelect || 'Destaques da Semana');
+
+    const descricaoFinal = descricao && descricao.trim().length > 0
+      ? descricao.trim()
+      : null;
+
     // --- Upload ao Vercel Blob ---
     const blob = await put(`produtos/${Date.now()}-${arquivo.name}`, arquivo, {
       access: 'public',
@@ -42,9 +54,9 @@ export async function uploadProduct(formData: FormData): Promise<ActionResponse>
 
     // --- INSERT no Postgres ---
     const { rows } = await sql`
-      INSERT INTO produtos (nome, preco, imagem_url)
-      VALUES (${nome.trim()}, ${preco}, ${blob.url})
-      RETURNING id, nome, preco, imagem_url, status, created_at
+      INSERT INTO produtos (nome, preco, imagem_url, categoria, descricao)
+      VALUES (${nome.trim()}, ${preco}, ${blob.url}, ${categoria}, ${descricaoFinal})
+      RETURNING id, nome, preco, imagem_url, categoria, descricao, status, created_at
     `;
 
     // Revalidar as páginas que consomem esses dados
@@ -118,7 +130,7 @@ export async function toggleStatus(id: string): Promise<ActionResponse> {
         ELSE 'disponivel'
       END
       WHERE id = ${id}
-      RETURNING id, nome, preco, imagem_url, status, created_at
+      RETURNING id, nome, preco, imagem_url, categoria, descricao, status, created_at
     `;
 
     if (rows.length === 0) {

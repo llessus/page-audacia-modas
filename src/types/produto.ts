@@ -3,6 +3,8 @@ export interface Produto {
   nome: string;
   preco: number;
   imagem_url: string;
+  categoria: string;
+  descricao?: string | null;
   status: 'disponivel' | 'esgotado';
   created_at: string;
 }
