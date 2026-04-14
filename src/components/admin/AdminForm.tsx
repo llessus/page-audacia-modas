@@ -150,8 +150,8 @@ export function AdminForm() {
                 <Camera className="w-6 h-6 text-audacia-gold" />
               </div>
               <div className="text-center">
-                <p className="text-white/60 text-sm">Clique para escolher ou</p>
-                <p className="text-audacia-gold text-sm font-medium">tirar foto com a câmera</p>
+                <p className="text-white/60 text-sm">Clique para adicionar uma foto</p>
+                <p className="text-audacia-gold text-sm font-medium">Galeria, câmera ou arquivo</p>
               </div>
             </label>
           )}
@@ -162,7 +162,6 @@ export function AdminForm() {
             name="imagem"
             type="file"
             accept="image/*"
-            capture="environment"
             required
             onChange={handleFileChange}
             className={preview ? 'hidden' : 'sr-only'}
