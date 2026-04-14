@@ -61,9 +61,12 @@ export function Footer() {
 
         {/* Linha de Copyright */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/50 font-light tracking-wider">
-          <p>&copy; {new Date().getFullYear()} {siteConfig.nomeLoja}. Todos os direitos reservados.</p>
+          <p>
+            &copy; {new Date().getFullYear()} {siteConfig.nomeLoja}. Todos os direitos reservados.
+            <a href="/admin" className="ml-2 opacity-20 hover:opacity-100 transition-opacity">· Acesso</a>
+          </p>
           <p className="flex items-center gap-1">
-            Desenvolvido por <a href="https://github.com/llessus" target="_blank" rel="noopener noreferrer" className="text-audacia-gold hover:text-white transition-colors font-medium">Você</a>
+            Desenvolvido por <a href="https://github.com/llessus" target="_blank" rel="noopener noreferrer" className="text-audacia-gold hover:text-white transition-colors font-medium">llessus</a>
           </p>
         </div>
       </div>

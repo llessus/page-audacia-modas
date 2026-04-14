@@ -24,7 +24,7 @@ async function loginAction(formData: FormData) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24,
+    maxAge: 60 * 60 * 24 * 30, // 30 dias de sessão
     path: '/',
   });
 
