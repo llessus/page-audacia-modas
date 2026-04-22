@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://page-audacia-modas.vercel.app'),
   title: 'Audácia Modas | Vista sua Essência',
   description:
     'Audácia Modas: moda feminina premium com atendimento personalizado. Descubra a coleção exclusiva em Santa Maria Norte - DF. Fale conosco pelo WhatsApp!',

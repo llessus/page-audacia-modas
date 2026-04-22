@@ -3,10 +3,12 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { Search, Tag, X } from 'lucide-react';
+import { Search, Tag, X, ShoppingBag, Check, Share2, Flame } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
 import { ProductModal } from '@/components/ProductModal';
+import { useCart } from '@/context/CartContext';
 import type { Produto } from '@/types/produto';
+import { CORES_DISPONIVEIS, TAMANHOS_DISPONIVEIS } from '@/types/produto';
 
 interface MiniCatalogProps {
   produtosIniciais: Produto[];
@@ -26,6 +28,12 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
   const [selectedProduct, setSelectedProduct] = useState<Produto | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeSizes, setActiveSizes] = useState<string[]>([]);
+  const [activeColors, setActiveColors] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
+  const { addItem, justAdded } = useCart();
 
   // Lista única de categorias presentes nos produtos
   const allCategories = useMemo(() => {
@@ -41,6 +49,19 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
       if (idxB !== -1) return 1;
       return a.localeCompare(b);
     });
+  }, [produtosIniciais]);
+
+  // Tamanhos e cores presentes nos produtos
+  const availableSizes = useMemo(() => {
+    const sizes = new Set<string>();
+    produtosIniciais.forEach(p => p.tamanhos?.forEach(t => sizes.add(t)));
+    return TAMANHOS_DISPONIVEIS.filter(t => sizes.has(t));
+  }, [produtosIniciais]);
+
+  const availableColors = useMemo(() => {
+    const colors = new Set<string>();
+    produtosIniciais.forEach(p => p.cores?.forEach(c => colors.add(c)));
+    return CORES_DISPONIVEIS.filter(c => colors.has(c.nome));
   }, [produtosIniciais]);
 
   // Filtragem e agrupamento
@@ -59,6 +80,20 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
     // Filtro por Categoria Ativa
     if (activeCategory) {
       filtered = filtered.filter(p => p.categoria === activeCategory);
+    }
+
+    // Filtro por Tamanhos
+    if (activeSizes.length > 0) {
+      filtered = filtered.filter(p => 
+        p.tamanhos && p.tamanhos.some(t => activeSizes.includes(t))
+      );
+    }
+
+    // Filtro por Cores
+    if (activeColors.length > 0) {
+      filtered = filtered.filter(p => 
+        p.cores && p.cores.some(c => activeColors.includes(c))
+      );
     }
 
     // Agrupamento
@@ -83,7 +118,31 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
       nome: cat,
       produtos: grouped.get(cat)!
     }));
-  }, [produtosIniciais, searchTerm, activeCategory]);
+  }, [produtosIniciais, searchTerm, activeCategory, activeSizes, activeColors]);
+
+  const hasActiveFilters = activeSizes.length > 0 || activeColors.length > 0;
+
+  function toggleSize(size: string) {
+    setActiveSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
+  }
+
+  function toggleColor(color: string) {
+    setActiveColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
+  }
+
+  function handleShare(product: Produto, e: React.MouseEvent) {
+    e.stopPropagation();
+    const url = `${window.location.origin}/produto/${product.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedId(product.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  }
+
+  function handleAddToCart(product: Produto, e: React.MouseEvent) {
+    e.stopPropagation();
+    addItem(product);
+  }
 
   return (
     <>
@@ -139,6 +198,105 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
                 </button>
               ))}
             </div>
+
+            {/* Toggle de Filtros Avançados */}
+            {(availableSizes.length > 0 || availableColors.length > 0) && (
+              <div className="text-center">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs tracking-wider transition-all duration-300 border ${
+                    hasActiveFilters
+                      ? 'border-audacia-gold/50 text-audacia-gold bg-audacia-gold/10'
+                      : 'border-white/10 text-white/40 hover:text-white/60 hover:border-white/20'
+                  }`}
+                >
+                  <Tag className="w-3.5 h-3.5" />
+                  Filtrar por tamanho e cor
+                  {hasActiveFilters && (
+                    <span className="w-5 h-5 rounded-full bg-audacia-gold text-audacia-rose-dark text-[10px] font-bold flex items-center justify-center">
+                      {activeSizes.length + activeColors.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Painel de Filtros */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-5">
+                    {/* Tamanhos */}
+                    {availableSizes.length > 0 && (
+                      <div>
+                        <p className="text-white/50 text-xs tracking-wider uppercase mb-3">Tamanhos</p>
+                        <div className="flex flex-wrap gap-2">
+                          {availableSizes.map(size => (
+                            <button
+                              key={size}
+                              onClick={() => toggleSize(size)}
+                              className={`w-10 h-10 rounded-xl text-xs font-bold tracking-wider transition-all duration-200 border ${
+                                activeSizes.includes(size)
+                                  ? 'bg-audacia-gold text-audacia-rose-dark border-audacia-gold shadow-gold-glow'
+                                  : 'bg-white/5 text-white/50 border-white/10 hover:border-white/30'
+                              }`}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Cores */}
+                    {availableColors.length > 0 && (
+                      <div>
+                        <p className="text-white/50 text-xs tracking-wider uppercase mb-3">Cores</p>
+                        <div className="flex flex-wrap gap-2">
+                          {availableColors.map(cor => (
+                            <button
+                              key={cor.nome}
+                              onClick={() => toggleColor(cor.nome)}
+                              className={`group/cor flex items-center gap-2 px-3 py-2 rounded-full text-xs tracking-wide transition-all duration-200 border ${
+                                activeColors.includes(cor.nome)
+                                  ? 'border-audacia-gold bg-audacia-gold/10 text-white'
+                                  : 'border-white/10 bg-white/5 text-white/50 hover:border-white/30'
+                              }`}
+                              title={cor.nome}
+                            >
+                              <span
+                                className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0"
+                                style={{ backgroundColor: cor.hex }}
+                              />
+                              <span>{cor.nome}</span>
+                              {activeColors.includes(cor.nome) && (
+                                <Check className="w-3 h-3 text-audacia-gold" />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Limpar filtros */}
+                    {hasActiveFilters && (
+                      <button
+                        onClick={() => { setActiveSizes([]); setActiveColors([]); }}
+                        className="text-audacia-gold text-xs tracking-wider hover:underline"
+                      >
+                        Limpar filtros
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <AnimatePresence mode="wait">
@@ -162,6 +320,10 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
                     <div className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-4 pb-8 md:pb-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-12 max-w-6xl mx-auto md:overflow-x-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4 md:px-0">
                       {categoria.produtos.map((product, index) => {
                         const isEsgotado = product.status === 'esgotado';
+                        const isUltimasPecas = !isEsgotado && product.quantidade > 0 && product.quantidade <= 2;
+                        const isAdded = justAdded === product.id;
+                        const isHovered = hoveredProductId === product.id;
+                        const hasSecondImage = product.imagens_extras && product.imagens_extras.length > 0;
                         
                         return (
                           <motion.div
@@ -175,16 +337,58 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
                             transition={{ duration: 0.5, delay: index * 0.05 }}
                             whileHover={!isEsgotado ? { y: -10 } : {}}
                             onClick={() => setSelectedProduct(product)}
+                            onMouseEnter={() => setHoveredProductId(product.id)}
+                            onMouseLeave={() => setHoveredProductId(null)}
                           >
-                            {/* Imagem */}
+                            {/* Selo Últimas Peças */}
+                            {isUltimasPecas && (
+                              <motion.div
+                                className="absolute top-5 left-5 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/90 text-white text-[11px] font-bold tracking-wider backdrop-blur-md border border-orange-400/40 shadow-lg"
+                                animate={{ scale: [1, 1.05, 1] }}
+                                transition={{ repeat: Infinity, duration: 2 }}
+                              >
+                                <Flame className="w-3.5 h-3.5" />
+                                ÚLTIMAS PEÇAS
+                              </motion.div>
+                            )}
+
+                            {/* Botão compartilhar */}
+                            <button
+                              onClick={(e) => handleShare(product, e)}
+                              className="absolute top-5 right-5 z-30 p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/60 hover:text-white hover:bg-black/60 transition-all opacity-0 group-hover:opacity-100"
+                              title="Copiar link do produto"
+                            >
+                              {copiedId === product.id ? (
+                                <Check className="w-4 h-4 text-emerald-400" />
+                              ) : (
+                                <Share2 className="w-4 h-4" />
+                              )}
+                            </button>
+
+                            {/* Imagem com hover swap */}
                             <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-6 shadow-inner">
+                              {/* Imagem principal */}
                               <Image 
                                 src={product.imagem_url} 
                                 alt={product.nome} 
                                 fill
                                 sizes="(max-width: 768px) 100vw, 33vw"
-                                className={`object-cover transform transition-transform duration-700 ease-out ${!isEsgotado ? 'group-hover:scale-110' : ''}`}
+                                className={`object-cover transform transition-all duration-700 ease-out ${!isEsgotado ? 'group-hover:scale-110' : ''} ${
+                                  hasSecondImage && isHovered ? 'opacity-0' : 'opacity-100'
+                                }`}
                               />
+                              {/* Segunda imagem (hover) */}
+                              {hasSecondImage && (
+                                <Image 
+                                  src={product.imagens_extras[0]} 
+                                  alt={`${product.nome} - foto 2`} 
+                                  fill
+                                  sizes="(max-width: 768px) 100vw, 33vw"
+                                  className={`object-cover transform transition-all duration-700 ease-out absolute inset-0 ${
+                                    isHovered ? 'opacity-100 scale-105' : 'opacity-0'
+                                  }`}
+                                />
+                              )}
                               
                               {/* Overlay de Status */}
                               {isEsgotado && (
@@ -209,27 +413,68 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
                               <h3 className="font-serif text-xl mb-1 text-white group-hover:text-audacia-gold transition-colors">
                                 {product.nome}
                               </h3>
+                              
+                              {/* Badges de tamanho e cor */}
+                              {((product.tamanhos && product.tamanhos.length > 0) || (product.cores && product.cores.length > 0)) && (
+                                <div className="flex flex-wrap items-center justify-center gap-1.5 mb-2">
+                                  {product.tamanhos?.map(t => (
+                                    <span key={t} className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-white/5 border border-white/10 text-white/40">
+                                      {t}
+                                    </span>
+                                  ))}
+                                  {product.cores?.map(c => {
+                                    const corInfo = CORES_DISPONIVEIS.find(cd => cd.nome === c);
+                                    return (
+                                      <span
+                                        key={c}
+                                        className="w-3.5 h-3.5 rounded-full border border-white/20"
+                                        style={{ backgroundColor: corInfo?.hex || '#888' }}
+                                        title={c}
+                                      />
+                                    );
+                                  })}
+                                </div>
+                              )}
+
                               <p className={`font-sans font-bold text-lg ${isEsgotado ? 'text-white/40' : 'text-audacia-gold'}`}>
                                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.preco)}
                               </p>
                               
+                              {/* Aviso de estoque baixo */}
+                              {isUltimasPecas && (
+                                <p className="text-orange-400 text-[10px] font-bold tracking-wider mt-1">
+                                  {product.quantidade === 1 ? 'Última unidade!' : `Restam apenas ${product.quantidade}`}
+                                </p>
+                              )}
+
                               <button 
                                 disabled={isEsgotado}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (!isEsgotado) {
-                                    const text = encodeURIComponent(`Olá! Tenho interesse no ${product.nome}`);
-                                    window.open(`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${text}`, '_blank');
+                                    handleAddToCart(product, e);
                                   }
                                 }}
                                 className={`mt-auto relative overflow-hidden px-6 py-3 rounded-full border transition-all duration-300 font-bold text-xs tracking-widest uppercase ${
                                   isEsgotado 
                                   ? 'border-white/10 text-white/20 cursor-not-allowed' 
+                                  : isAdded
+                                  ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
                                   : 'border-audacia-gold/40 text-audacia-gold hover:border-audacia-gold hover:text-audacia-rose-dark group/btn'
                                 }`}
                               >
-                                {isEsgotado ? 'Produto Esgotado' : 'Quero este item'}
-                                {!isEsgotado && (
+                                {isEsgotado ? 'Produto Esgotado' : isAdded ? (
+                                  <span className="flex items-center justify-center gap-2">
+                                    <Check className="w-4 h-4" />
+                                    Adicionado!
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center justify-center gap-2">
+                                    <ShoppingBag className="w-3.5 h-3.5" />
+                                    Adicionar à Sacola
+                                  </span>
+                                )}
+                                {!isEsgotado && !isAdded && (
                                   <div className="absolute inset-0 bg-audacia-gold transform scale-x-0 origin-left group-hover/btn:scale-x-100 transition-transform duration-300 -z-10" />
                                 )}
                               </button>
@@ -252,7 +497,7 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
                 <h3 className="text-xl font-serif text-white/60">Nenhum produto encontrado</h3>
                 <p className="text-white/30 text-sm mt-2">Tente buscar por outro termo ou categoria.</p>
                 <button 
-                  onClick={() => { setSearchTerm(''); setActiveCategory(null); }}
+                  onClick={() => { setSearchTerm(''); setActiveCategory(null); setActiveSizes([]); setActiveColors([]); }}
                   className="mt-6 text-audacia-gold text-xs font-bold uppercase tracking-widest hover:underline"
                 >
                   Limpar todos os filtros

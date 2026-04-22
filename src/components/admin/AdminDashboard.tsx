@@ -16,6 +16,7 @@ export function AdminDashboard({ produtos, logoutAction, heroImage }: AdminDashb
   const totalProdutos = produtos.length;
   const disponiveis = produtos.filter(p => p.status === 'disponivel').length;
   const esgotados = totalProdutos - disponiveis;
+  const estoqueBaixo = produtos.filter(p => p.quantidade > 0 && p.quantidade <= 2 && p.status === 'disponivel').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#3a2433] via-audacia-rose-dark to-audacia-rose relative">
@@ -62,7 +63,7 @@ export function AdminDashboard({ produtos, logoutAction, heroImage }: AdminDashb
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 py-8">
         {/* Stats Strip */}
-        <div className="grid grid-cols-3 gap-3 md:gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
           <div className="glassmorphism rounded-2xl p-4 md:p-5 text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Package className="w-4 h-4 text-audacia-gold/60" />
@@ -83,6 +84,13 @@ export function AdminDashboard({ produtos, logoutAction, heroImage }: AdminDashb
               <span className="text-white/50 text-xs tracking-wide">Esgotados</span>
             </div>
             <p className="text-2xl md:text-3xl font-serif text-red-400">{esgotados}</p>
+          </div>
+          <div className="glassmorphism rounded-2xl p-4 md:p-5 text-center">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+              <span className="text-white/50 text-xs tracking-wide">Estoque Baixo</span>
+            </div>
+            <p className="text-2xl md:text-3xl font-serif text-orange-400">{estoqueBaixo}</p>
           </div>
         </div>
 

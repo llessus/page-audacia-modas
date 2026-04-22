@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { updateProduct } from '@/app/actions';
-import { X, Camera, Save, Tag, ChevronDown, FileText } from 'lucide-react';
+import { X, Camera, Save, Tag, ChevronDown, FileText, Ruler, Palette, Package, Plus } from 'lucide-react';
 import Image from 'next/image';
 import type { Produto } from '@/types/produto';
+import { TAMANHOS_DISPONIVEIS, CORES_DISPONIVEIS } from '@/types/produto';
 
 const CATEGORIAS_PADRAO = [
   'Destaques da Semana',
@@ -26,8 +27,15 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [showNovaCategoria, setShowNovaCategoria] = useState(false);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [stockMode, setStockMode] = useState<'unlimited' | 'limited'>('unlimited');
+  const [stockQty, setStockQty] = useState(1);
+  const [extrasToDelete, setExtrasToDelete] = useState<string[]>([]);
+  const [newExtraPreviews, setNewExtraPreviews] = useState<string[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const extraFileRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Reset state when product changes
   useEffect(() => {
@@ -35,9 +43,19 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
       setPreview(null);
       setFeedback(null);
       setIsLoading(false);
-      // Check if current categoria is a custom one
+      setExtrasToDelete([]);
+      setNewExtraPreviews([]);
       const isCustom = produto.categoria && !CATEGORIAS_PADRAO.includes(produto.categoria);
       setShowNovaCategoria(!!isCustom);
+      setSelectedSizes(produto.tamanhos || []);
+      setSelectedColors(produto.cores || []);
+      if (produto.quantidade === -1) {
+        setStockMode('unlimited');
+        setStockQty(1);
+      } else {
+        setStockMode('limited');
+        setStockQty(produto.quantidade);
+      }
     }
   }, [produto]);
 
@@ -62,6 +80,9 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
 
   if (!produto) return null;
 
+  // Fotos extras que não foram marcadas para deletar
+  const currentExtras = (produto.imagens_extras || []).filter(url => !extrasToDelete.includes(url));
+
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
@@ -71,24 +92,65 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
     }
   }
 
+  function handleNewExtraFileChange(index: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewExtraPreviews(prev => {
+          const arr = [...prev];
+          arr[index] = reader.result as string;
+          return arr;
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   function clearNewImage() {
     setPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  function clearNewExtra(index: number) {
+    setNewExtraPreviews(prev => {
+      const arr = [...prev];
+      arr[index] = '';
+      return arr;
+    });
+    if (extraFileRefs.current[index]) {
+      extraFileRefs.current[index]!.value = '';
+    }
   }
 
   function handleCategoriaChange(e: React.ChangeEvent<HTMLSelectElement>) {
     setShowNovaCategoria(e.target.value === '__nova__');
   }
 
+  function toggleSize(size: string) {
+    setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
+  }
+
+  function toggleColor(color: string) {
+    setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
+  }
+
   async function handleSubmit(formData: FormData) {
     setIsLoading(true);
     setFeedback(null);
+
+    // Inject extra data
+    formData.set('tamanhos', JSON.stringify(selectedSizes));
+    formData.set('cores', JSON.stringify(selectedColors));
+    formData.set('quantidade', stockMode === 'unlimited' ? '-1' : String(stockQty));
+    if (extrasToDelete.length > 0) {
+      formData.set('imagensExtrasDeletar', JSON.stringify(extrasToDelete));
+    }
 
     try {
       const result = await updateProduct(formData);
       if (result.success) {
         setFeedback({ type: 'success', message: result.message });
-        // Close after brief delay so user sees the success message
         setTimeout(() => onClose(), 1200);
       } else {
         setFeedback({ type: 'error', message: result.message });
@@ -103,6 +165,9 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
   // Determine which categoria value to pre-select
   const isCustomCategoria = produto.categoria && !CATEGORIAS_PADRAO.includes(produto.categoria);
   const selectValue = isCustomCategoria ? '__nova__' : (produto.categoria || 'Destaques da Semana');
+
+  // Quantas novas extras podemos adicionar (máximo 3 totais)
+  const maxNewExtras = Math.max(0, 3 - currentExtras.length);
 
   const inputClass = 'w-full px-4 py-3.5 rounded-xl bg-white/5 border border-audacia-gold/20 text-white placeholder:text-white/30 focus:outline-none focus:border-audacia-gold/60 focus:ring-1 focus:ring-audacia-gold/30 transition-all duration-300 font-sans text-sm';
 
@@ -242,6 +307,109 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
             )}
           </div>
 
+          {/* Tamanhos */}
+          <div>
+            <label className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
+              <span className="flex items-center gap-1.5">
+                <Ruler className="w-3.5 h-3.5" />
+                Tamanhos
+              </span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {TAMANHOS_DISPONIVEIS.map(size => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => toggleSize(size)}
+                  disabled={isLoading}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold tracking-wider transition-all duration-200 border ${
+                    selectedSizes.includes(size)
+                      ? 'bg-audacia-gold text-audacia-rose-dark border-audacia-gold'
+                      : 'bg-white/5 text-white/50 border-white/10 hover:border-white/30'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Cores */}
+          <div>
+            <label className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
+              <span className="flex items-center gap-1.5">
+                <Palette className="w-3.5 h-3.5" />
+                Cores
+              </span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {CORES_DISPONIVEIS.map(cor => (
+                <button
+                  key={cor.nome}
+                  type="button"
+                  onClick={() => toggleColor(cor.nome)}
+                  disabled={isLoading}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs tracking-wide transition-all duration-200 border ${
+                    selectedColors.includes(cor.nome)
+                      ? 'border-audacia-gold bg-audacia-gold/15 text-white'
+                      : 'border-white/10 bg-white/5 text-white/40 hover:border-white/20'
+                  }`}
+                >
+                  <span
+                    className="w-3.5 h-3.5 rounded-full border border-white/20 flex-shrink-0"
+                    style={{ backgroundColor: cor.hex }}
+                  />
+                  {cor.nome}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Estoque */}
+          <div>
+            <label className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
+              <span className="flex items-center gap-1.5">
+                <Package className="w-3.5 h-3.5" />
+                Estoque
+              </span>
+            </label>
+            <div className="flex gap-2 mb-3">
+              <button
+                type="button"
+                onClick={() => setStockMode('unlimited')}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-bold tracking-wider transition-all border ${
+                  stockMode === 'unlimited'
+                    ? 'bg-audacia-gold/15 border-audacia-gold/40 text-audacia-gold'
+                    : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
+                }`}
+              >
+                Ilimitado
+              </button>
+              <button
+                type="button"
+                onClick={() => setStockMode('limited')}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-bold tracking-wider transition-all border ${
+                  stockMode === 'limited'
+                    ? 'bg-audacia-gold/15 border-audacia-gold/40 text-audacia-gold'
+                    : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
+                }`}
+              >
+                Controlado
+              </button>
+            </div>
+            {stockMode === 'limited' && (
+              <input
+                type="number"
+                min="0"
+                value={stockQty}
+                onChange={(e) => setStockQty(Math.max(0, parseInt(e.target.value) || 0))}
+                className={inputClass}
+                placeholder="Quantidade em estoque"
+                disabled={isLoading}
+              />
+            )}
+          </div>
+
           {/* Descrição */}
           <div>
             <label htmlFor="edit-descricao" className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
@@ -262,13 +430,12 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
             />
           </div>
 
-          {/* Foto */}
+          {/* Foto Principal */}
           <div>
             <label className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
-              Foto do Produto
+              Foto Principal
             </label>
 
-            {/* Current / preview image */}
             <div className="relative rounded-xl overflow-hidden border border-audacia-gold/20 mb-3">
               <Image
                 src={preview || produto.imagem_url}
@@ -295,7 +462,6 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
               )}
             </div>
 
-            {/* File input trigger — large touch target */}
             <label
               htmlFor="edit-imagem"
               className="flex items-center justify-center gap-2 py-3.5 rounded-xl border border-dashed border-audacia-gold/30 hover:border-audacia-gold/60 bg-white/[0.02] cursor-pointer transition-all duration-300 text-sm text-audacia-gold/70 hover:text-audacia-gold min-h-[48px]"
@@ -315,7 +481,74 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
             />
           </div>
 
-          {/* Actions — large touch targets for thumb */}
+          {/* Fotos Extras Existentes */}
+          {currentExtras.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
+                Fotos Extras Atuais
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {currentExtras.map((url, i) => (
+                  <div key={url} className="relative rounded-xl overflow-hidden border border-audacia-gold/20 aspect-square">
+                    <Image src={url} alt={`Extra ${i + 1}`} fill className="object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setExtrasToDelete(prev => [...prev, url])}
+                      className="absolute top-1 right-1 p-1.5 rounded-full bg-black/60 text-white hover:bg-red-500/80 transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Novas Fotos Extras */}
+          {maxNewExtras > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
+                Adicionar Fotos Extras
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {Array.from({ length: maxNewExtras }).map((_, i) => (
+                  <div key={i}>
+                    {newExtraPreviews[i] ? (
+                      <div className="relative rounded-xl overflow-hidden border border-audacia-gold/20 aspect-square">
+                        <Image src={newExtraPreviews[i]} alt={`Nova ${i + 1}`} fill className="object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => clearNewExtra(i)}
+                          className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white hover:bg-red-500/80"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor={`edit-extra-img-${i}`}
+                        className="flex items-center justify-center aspect-square rounded-xl border-2 border-dashed border-white/10 hover:border-audacia-gold/30 bg-white/[0.02] cursor-pointer transition-all"
+                      >
+                        <Plus className="w-5 h-5 text-white/20" />
+                      </label>
+                    )}
+                    <input
+                      ref={el => { extraFileRefs.current[i] = el; }}
+                      id={`edit-extra-img-${i}`}
+                      name={`imagem_extra_${i}`}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleNewExtraFileChange(i, e)}
+                      className="sr-only"
+                      disabled={isLoading}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
           <div className="flex gap-3 pt-2 pb-4">
             <button
               type="button"

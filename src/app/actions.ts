@@ -17,6 +17,9 @@ export async function uploadProduct(formData: FormData): Promise<ActionResponse>
     const categoriaSelect = formData.get('categoria') as string | null;
     const novaCategoria = formData.get('novaCategoria') as string | null;
     const descricao = formData.get('descricao') as string | null;
+    const quantidadeRaw = formData.get('quantidade') as string | null;
+    const tamanhosRaw = formData.get('tamanhos') as string | null;
+    const coresRaw = formData.get('cores') as string | null;
 
     // --- Validações rigorosas ---
     if (!nome || nome.trim().length === 0) {
@@ -47,6 +50,18 @@ export async function uploadProduct(formData: FormData): Promise<ActionResponse>
       ? descricao.trim()
       : null;
 
+    // Quantidade (-1 = ilimitado)
+    const quantidade = quantidadeRaw !== null && quantidadeRaw !== ''
+      ? parseInt(quantidadeRaw, 10)
+      : -1;
+
+    // Tamanhos e Cores (recebidos como JSON string)
+    const tamanhos: string[] = tamanhosRaw ? JSON.parse(tamanhosRaw) : [];
+    const cores: string[] = coresRaw ? JSON.parse(coresRaw) : [];
+
+    // Determinar status baseado na quantidade
+    const status = quantidade === 0 ? 'esgotado' : 'disponivel';
+
     // --- Upload ao Vercel Blob ---
     const blob = await put(`produtos/${Date.now()}-${arquivo.name}`, arquivo, {
       access: 'public',
@@ -54,10 +69,32 @@ export async function uploadProduct(formData: FormData): Promise<ActionResponse>
 
     // --- INSERT no Postgres ---
     const { rows } = await sql`
-      INSERT INTO produtos (nome, preco, imagem_url, categoria, descricao)
-      VALUES (${nome.trim()}, ${preco}, ${blob.url}, ${categoria}, ${descricaoFinal})
-      RETURNING id, nome, preco, imagem_url, categoria, descricao, status, created_at
+      INSERT INTO produtos (nome, preco, imagem_url, categoria, descricao, quantidade, tamanhos, cores, status)
+      VALUES (${nome.trim()}, ${preco}, ${blob.url}, ${categoria}, ${descricaoFinal}, ${quantidade}, ${tamanhos as unknown as string}, ${cores as unknown as string}, ${status})
+      RETURNING id, nome, preco, imagem_url, categoria, descricao, status, created_at, quantidade, tamanhos, cores
     `;
+
+    const produtoId = rows[0].id;
+
+    // --- Upload de imagens extras ---
+    const imagensExtras: File[] = [];
+    for (let i = 0; i < 3; i++) {
+      const extra = formData.get(`imagem_extra_${i}`) as File | null;
+      if (extra && extra.size > 0) {
+        if (extra.size > 4.5 * 1024 * 1024) continue; // Pula se muito grande
+        imagensExtras.push(extra);
+      }
+    }
+
+    for (let i = 0; i < imagensExtras.length; i++) {
+      const extraBlob = await put(`produtos/${Date.now()}-extra-${imagensExtras[i].name}`, imagensExtras[i], {
+        access: 'public',
+      });
+      await sql`
+        INSERT INTO produto_imagens (produto_id, imagem_url, ordem)
+        VALUES (${produtoId}, ${extraBlob.url}, ${i})
+      `;
+    }
 
     // Revalidar as páginas que consomem esses dados
     revalidatePath('/admin/dashboard');
@@ -83,7 +120,7 @@ export async function deleteProduct(id: string): Promise<ActionResponse> {
       return { success: false, message: 'ID do produto é obrigatório.' };
     }
 
-    // Buscar URL da imagem antes de deletar
+    // Buscar URL da imagem principal e extras antes de deletar
     const { rows } = await sql`
       SELECT imagem_url FROM produtos WHERE id = ${id}
     `;
@@ -94,14 +131,28 @@ export async function deleteProduct(id: string): Promise<ActionResponse> {
 
     const imagemUrl = rows[0].imagem_url as string;
 
-    // Deletar do Postgres
+    // Buscar imagens extras
+    const { rows: extraRows } = await sql`
+      SELECT imagem_url FROM produto_imagens WHERE produto_id = ${id}
+    `;
+
+    // Deletar do Postgres (CASCADE deleta produto_imagens automaticamente)
     await sql`DELETE FROM produtos WHERE id = ${id}`;
 
-    // Deletar o blob físico
+    // Deletar o blob principal
     try {
       await del(imagemUrl);
     } catch (blobError) {
       console.warn('[deleteProduct] Falha ao deletar blob (pode já ter sido removido):', blobError);
+    }
+
+    // Deletar blobs extras
+    for (const row of extraRows) {
+      try {
+        await del(row.imagem_url as string);
+      } catch (blobError) {
+        console.warn('[deleteProduct] Falha ao deletar blob extra:', blobError);
+      }
     }
 
     revalidatePath('/admin/dashboard');
@@ -130,7 +181,7 @@ export async function toggleStatus(id: string): Promise<ActionResponse> {
         ELSE 'disponivel'
       END
       WHERE id = ${id}
-      RETURNING id, nome, preco, imagem_url, categoria, descricao, status, created_at
+      RETURNING id, nome, preco, imagem_url, categoria, descricao, status, created_at, quantidade, tamanhos, cores
     `;
 
     if (rows.length === 0) {
@@ -168,6 +219,10 @@ export async function updateProduct(formData: FormData): Promise<ActionResponse>
     const descricao = formData.get('descricao') as string | null;
     const arquivo = formData.get('imagem') as File | null;
     const imagemAtual = formData.get('imagemAtual') as string | null;
+    const quantidadeRaw = formData.get('quantidade') as string | null;
+    const tamanhosRaw = formData.get('tamanhos') as string | null;
+    const coresRaw = formData.get('cores') as string | null;
+    const imagensExtrasDeletarRaw = formData.get('imagensExtrasDeletar') as string | null;
 
     // --- Validações ---
     if (!id) {
@@ -193,25 +248,34 @@ export async function updateProduct(formData: FormData): Promise<ActionResponse>
       ? descricao.trim()
       : null;
 
-    // --- Gerenciar imagem ---
+    // Quantidade
+    const quantidade = quantidadeRaw !== null && quantidadeRaw !== ''
+      ? parseInt(quantidadeRaw, 10)
+      : -1;
+
+    // Tamanhos e Cores
+    const tamanhos: string[] = tamanhosRaw ? JSON.parse(tamanhosRaw) : [];
+    const cores: string[] = coresRaw ? JSON.parse(coresRaw) : [];
+
+    // Status baseado na quantidade
+    // Só auto-muda pra esgotado se quantidade = 0
+    const statusUpdate = quantidade === 0 ? 'esgotado' : undefined;
+
+    // --- Gerenciar imagem principal ---
     let imagemUrl = imagemAtual || '';
 
-    // Só faz upload se o admin selecionou um arquivo novo (size > 0)
     const temNovaImagem = arquivo && arquivo.size > 0;
 
     if (temNovaImagem) {
-      // Validar tamanho
       if (arquivo.size > 4.5 * 1024 * 1024) {
         return { success: false, message: 'A imagem deve ter no máximo 4.5MB.' };
       }
 
-      // Upload da nova imagem
       const blob = await put(`produtos/${Date.now()}-${arquivo.name}`, arquivo, {
         access: 'public',
       });
       imagemUrl = blob.url;
 
-      // Deletar a imagem antiga do Blob para liberar espaço
       if (imagemAtual) {
         try {
           await del(imagemAtual);
@@ -221,19 +285,72 @@ export async function updateProduct(formData: FormData): Promise<ActionResponse>
       }
     }
 
-    // --- UPDATE no Postgres ---
-    const { rows } = await sql`
-      UPDATE produtos
-      SET nome = ${nome.trim()},
-          preco = ${preco},
-          imagem_url = ${imagemUrl},
-          categoria = ${categoria},
-          descricao = ${descricaoFinal}
-      WHERE id = ${id}
-      RETURNING id, nome, preco, imagem_url, categoria, descricao, status, created_at
-    `;
+    // --- Deletar imagens extras marcadas para remoção ---
+    if (imagensExtrasDeletarRaw) {
+      const urlsParaDeletar: string[] = JSON.parse(imagensExtrasDeletarRaw);
+      for (const url of urlsParaDeletar) {
+        try {
+          await sql`DELETE FROM produto_imagens WHERE produto_id = ${id} AND imagem_url = ${url}`;
+          await del(url);
+        } catch (e) {
+          console.warn('[updateProduct] Falha ao deletar imagem extra:', e);
+        }
+      }
+    }
 
-    if (rows.length === 0) {
+    // --- Upload de novas imagens extras ---
+    for (let i = 0; i < 3; i++) {
+      const extra = formData.get(`imagem_extra_${i}`) as File | null;
+      if (extra && extra.size > 0 && extra.size <= 4.5 * 1024 * 1024) {
+        const extraBlob = await put(`produtos/${Date.now()}-extra-${extra.name}`, extra, {
+          access: 'public',
+        });
+        // Get current max order
+        const { rows: maxRows } = await sql`
+          SELECT COALESCE(MAX(ordem), -1) + 1 as next_ordem FROM produto_imagens WHERE produto_id = ${id}
+        `;
+        const nextOrdem = maxRows[0]?.next_ordem ?? 0;
+        await sql`
+          INSERT INTO produto_imagens (produto_id, imagem_url, ordem)
+          VALUES (${id}, ${extraBlob.url}, ${nextOrdem + i})
+        `;
+      }
+    }
+
+    // --- UPDATE no Postgres ---
+    let updateQuery;
+    if (statusUpdate) {
+      updateQuery = await sql`
+        UPDATE produtos
+        SET nome = ${nome.trim()},
+            preco = ${preco},
+            imagem_url = ${imagemUrl},
+            categoria = ${categoria},
+            descricao = ${descricaoFinal},
+            quantidade = ${quantidade},
+            tamanhos = ${tamanhos as unknown as string},
+            cores = ${cores as unknown as string},
+            status = ${statusUpdate}
+        WHERE id = ${id}
+        RETURNING id, nome, preco, imagem_url, categoria, descricao, status, created_at, quantidade, tamanhos, cores
+      `;
+    } else {
+      updateQuery = await sql`
+        UPDATE produtos
+        SET nome = ${nome.trim()},
+            preco = ${preco},
+            imagem_url = ${imagemUrl},
+            categoria = ${categoria},
+            descricao = ${descricaoFinal},
+            quantidade = ${quantidade},
+            tamanhos = ${tamanhos as unknown as string},
+            cores = ${cores as unknown as string}
+        WHERE id = ${id}
+        RETURNING id, nome, preco, imagem_url, categoria, descricao, status, created_at, quantidade, tamanhos, cores
+      `;
+    }
+
+    if (updateQuery.rows.length === 0) {
       return { success: false, message: 'Produto não encontrado.' };
     }
 
@@ -243,7 +360,7 @@ export async function updateProduct(formData: FormData): Promise<ActionResponse>
     return {
       success: true,
       message: `Produto "${nome.trim()}" atualizado com sucesso!`,
-      produto: rows[0] as unknown as Produto,
+      produto: updateQuery.rows[0] as unknown as Produto,
     };
   } catch (error) {
     console.error('[updateProduct] Erro:', error);

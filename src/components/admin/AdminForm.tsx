@@ -2,8 +2,9 @@
 
 import { useState, useRef } from 'react';
 import { uploadProduct } from '@/app/actions';
-import { Camera, Upload, Sparkles, X, Tag, ChevronDown, FileText } from 'lucide-react';
+import { Camera, Upload, Sparkles, X, Tag, ChevronDown, FileText, Ruler, Palette, Package, Plus } from 'lucide-react';
 import Image from 'next/image';
+import { TAMANHOS_DISPONIVEIS, CORES_DISPONIVEIS } from '@/types/produto';
 
 const CATEGORIAS_PADRAO = [
   'Destaques da Semana',
@@ -19,9 +20,15 @@ export function AdminForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [extraPreviews, setExtraPreviews] = useState<string[]>([]);
   const [showNovaCategoria, setShowNovaCategoria] = useState(false);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [stockMode, setStockMode] = useState<'unlimited' | 'limited'>('unlimited');
+  const [stockQty, setStockQty] = useState(1);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const extraFileRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -36,6 +43,21 @@ export function AdminForm() {
     }
   }
 
+  function handleExtraFileChange(index: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setExtraPreviews(prev => {
+          const arr = [...prev];
+          arr[index] = reader.result as string;
+          return arr;
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   function clearPreview() {
     setPreview(null);
     if (fileInputRef.current) {
@@ -43,13 +65,37 @@ export function AdminForm() {
     }
   }
 
+  function clearExtraPreview(index: number) {
+    setExtraPreviews(prev => {
+      const arr = [...prev];
+      arr[index] = '';
+      return arr;
+    });
+    if (extraFileRefs.current[index]) {
+      extraFileRefs.current[index]!.value = '';
+    }
+  }
+
   function handleCategoriaChange(e: React.ChangeEvent<HTMLSelectElement>) {
     setShowNovaCategoria(e.target.value === '__nova__');
+  }
+
+  function toggleSize(size: string) {
+    setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
+  }
+
+  function toggleColor(color: string) {
+    setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
   }
 
   async function handleSubmit(formData: FormData) {
     setIsLoading(true);
     setFeedback(null);
+
+    // Inject tamanhos/cores/quantidade as JSON
+    formData.set('tamanhos', JSON.stringify(selectedSizes));
+    formData.set('cores', JSON.stringify(selectedColors));
+    formData.set('quantidade', stockMode === 'unlimited' ? '-1' : String(stockQty));
 
     try {
       const result = await uploadProduct(formData);
@@ -58,7 +104,12 @@ export function AdminForm() {
         setFeedback({ type: 'success', message: result.message });
         formRef.current?.reset();
         setPreview(null);
+        setExtraPreviews([]);
         setShowNovaCategoria(false);
+        setSelectedSizes([]);
+        setSelectedColors([]);
+        setStockMode('unlimited');
+        setStockQty(1);
       } else {
         setFeedback({ type: 'error', message: result.message });
       }
@@ -179,6 +230,111 @@ export function AdminForm() {
           )}
         </div>
 
+        {/* Tamanhos */}
+        <div>
+          <label className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
+            <span className="flex items-center gap-1.5">
+              <Ruler className="w-3.5 h-3.5" />
+              Tamanhos
+              <span className="text-white/30 font-normal">(opcional)</span>
+            </span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {TAMANHOS_DISPONIVEIS.map(size => (
+              <button
+                key={size}
+                type="button"
+                onClick={() => toggleSize(size)}
+                disabled={isLoading}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold tracking-wider transition-all duration-200 border ${
+                  selectedSizes.includes(size)
+                    ? 'bg-audacia-gold text-audacia-rose-dark border-audacia-gold'
+                    : 'bg-white/5 text-white/50 border-white/10 hover:border-white/30'
+                }`}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Cores */}
+        <div>
+          <label className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
+            <span className="flex items-center gap-1.5">
+              <Palette className="w-3.5 h-3.5" />
+              Cores
+              <span className="text-white/30 font-normal">(opcional)</span>
+            </span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {CORES_DISPONIVEIS.map(cor => (
+              <button
+                key={cor.nome}
+                type="button"
+                onClick={() => toggleColor(cor.nome)}
+                disabled={isLoading}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs tracking-wide transition-all duration-200 border ${
+                  selectedColors.includes(cor.nome)
+                    ? 'border-audacia-gold bg-audacia-gold/15 text-white'
+                    : 'border-white/10 bg-white/5 text-white/40 hover:border-white/20'
+                }`}
+              >
+                <span
+                  className="w-3.5 h-3.5 rounded-full border border-white/20 flex-shrink-0"
+                  style={{ backgroundColor: cor.hex }}
+                />
+                {cor.nome}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Estoque */}
+        <div>
+          <label className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
+            <span className="flex items-center gap-1.5">
+              <Package className="w-3.5 h-3.5" />
+              Estoque
+            </span>
+          </label>
+          <div className="flex gap-2 mb-3">
+            <button
+              type="button"
+              onClick={() => setStockMode('unlimited')}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-bold tracking-wider transition-all border ${
+                stockMode === 'unlimited'
+                  ? 'bg-audacia-gold/15 border-audacia-gold/40 text-audacia-gold'
+                  : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
+              }`}
+            >
+              Ilimitado
+            </button>
+            <button
+              type="button"
+              onClick={() => setStockMode('limited')}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-bold tracking-wider transition-all border ${
+                stockMode === 'limited'
+                  ? 'bg-audacia-gold/15 border-audacia-gold/40 text-audacia-gold'
+                  : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
+              }`}
+            >
+              Controlado
+            </button>
+          </div>
+          {stockMode === 'limited' && (
+            <input
+              type="number"
+              min="0"
+              value={stockQty}
+              onChange={(e) => setStockQty(Math.max(0, parseInt(e.target.value) || 0))}
+              className={inputClass}
+              placeholder="Quantidade em estoque"
+              disabled={isLoading}
+            />
+          )}
+        </div>
+
         {/* Descrição */}
         <div>
           <label htmlFor="product-descricao" className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
@@ -198,10 +354,10 @@ export function AdminForm() {
           />
         </div>
 
-        {/* Upload de Imagem */}
+        {/* Upload de Imagem Principal */}
         <div>
           <label htmlFor="product-imagem" className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
-            Foto do Produto
+            Foto Principal
           </label>
           
           {preview ? (
@@ -247,6 +403,56 @@ export function AdminForm() {
             className={preview ? 'hidden' : 'sr-only'}
             disabled={isLoading}
           />
+        </div>
+
+        {/* Fotos Extras */}
+        <div>
+          <label className="block text-sm font-medium text-audacia-gold/80 mb-2 tracking-wide">
+            <span className="flex items-center gap-1.5">
+              Fotos Extras
+              <span className="text-white/30 font-normal">(até 3, opcional)</span>
+            </span>
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {[0, 1, 2].map(i => (
+              <div key={i}>
+                {extraPreviews[i] ? (
+                  <div className="relative rounded-xl overflow-hidden border border-audacia-gold/20 aspect-square">
+                    <Image
+                      src={extraPreviews[i]}
+                      alt={`Extra ${i + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => clearExtraPreview(i)}
+                      className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white hover:bg-red-500/80 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor={`extra-img-${i}`}
+                    className="flex items-center justify-center aspect-square rounded-xl border-2 border-dashed border-white/10 hover:border-audacia-gold/30 bg-white/[0.02] cursor-pointer transition-all"
+                  >
+                    <Plus className="w-5 h-5 text-white/20" />
+                  </label>
+                )}
+                <input
+                  ref={el => { extraFileRefs.current[i] = el; }}
+                  id={`extra-img-${i}`}
+                  name={`imagem_extra_${i}`}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleExtraFileChange(i, e)}
+                  className="sr-only"
+                  disabled={isLoading}
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Submit */}
