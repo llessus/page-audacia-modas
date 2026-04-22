@@ -29,6 +29,8 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
   const [showNovaCategoria, setShowNovaCategoria] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [customSizeInput, setCustomSizeInput] = useState('');
+  const [customColorInput, setCustomColorInput] = useState('');
   const [stockMode, setStockMode] = useState<'unlimited' | 'limited'>('unlimited');
   const [stockQty, setStockQty] = useState(1);
   const [extrasToDelete, setExtrasToDelete] = useState<string[]>([]);
@@ -133,6 +135,22 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
 
   function toggleColor(color: string) {
     setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
+  }
+
+  function handleAddCustomSize() {
+    const val = customSizeInput.trim();
+    if (val && !selectedSizes.includes(val)) {
+      setSelectedSizes(prev => [...prev, val]);
+    }
+    setCustomSizeInput('');
+  }
+
+  function handleAddCustomColor() {
+    const val = customColorInput.trim();
+    if (val && !selectedColors.includes(val)) {
+      setSelectedColors(prev => [...prev, val]);
+    }
+    setCustomColorInput('');
   }
 
   async function handleSubmit(formData: FormData) {
@@ -315,8 +333,8 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
                 Tamanhos
               </span>
             </label>
-            <div className="flex flex-wrap gap-2">
-              {TAMANHOS_DISPONIVEIS.map(size => (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {Array.from(new Set([...TAMANHOS_DISPONIVEIS, ...selectedSizes])).map(size => (
                 <button
                   key={size}
                   type="button"
@@ -332,6 +350,30 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
                 </button>
               ))}
             </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={customSizeInput}
+                onChange={(e) => setCustomSizeInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCustomSize();
+                  }
+                }}
+                placeholder="Outro (ex: Único)"
+                className={`${inputClass} !py-2 !px-3 !rounded-lg !text-xs`}
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={handleAddCustomSize}
+                disabled={isLoading || !customSizeInput.trim()}
+                className="px-3 py-2 rounded-lg bg-audacia-gold/20 text-audacia-gold text-xs font-medium hover:bg-audacia-gold/30 disabled:opacity-50 transition-colors"
+              >
+                Adicionar
+              </button>
+            </div>
           </div>
 
           {/* Cores */}
@@ -342,26 +384,56 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
                 Cores
               </span>
             </label>
-            <div className="flex flex-wrap gap-2">
-              {CORES_DISPONIVEIS.map(cor => (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {Array.from(new Set([...CORES_DISPONIVEIS.map(c => c.nome), ...selectedColors])).map(corNome => {
+                const corInfo = CORES_DISPONIVEIS.find(c => c.nome === corNome);
+                return (
                 <button
-                  key={cor.nome}
+                  key={corNome}
                   type="button"
-                  onClick={() => toggleColor(cor.nome)}
+                  onClick={() => toggleColor(corNome)}
                   disabled={isLoading}
                   className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs tracking-wide transition-all duration-200 border ${
-                    selectedColors.includes(cor.nome)
+                    selectedColors.includes(corNome)
                       ? 'border-audacia-gold bg-audacia-gold/15 text-white'
                       : 'border-white/10 bg-white/5 text-white/40 hover:border-white/20'
                   }`}
                 >
-                  <span
-                    className="w-3.5 h-3.5 rounded-full border border-white/20 flex-shrink-0"
-                    style={{ backgroundColor: cor.hex }}
-                  />
-                  {cor.nome}
+                  {corInfo ? (
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-white/20 flex-shrink-0"
+                      style={{ backgroundColor: corInfo.hex }}
+                    />
+                  ) : (
+                    <span className="w-3.5 h-3.5 rounded-full border border-white/20 flex-shrink-0 bg-white/5 flex items-center justify-center text-[8px] text-white/40">✦</span>
+                  )}
+                  {corNome}
                 </button>
-              ))}
+              )})}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={customColorInput}
+                onChange={(e) => setCustomColorInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCustomColor();
+                  }
+                }}
+                placeholder="Outra (ex: Vinho Amarelado)"
+                className={`${inputClass} !py-2 !px-3 !rounded-lg !text-xs`}
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={handleAddCustomColor}
+                disabled={isLoading || !customColorInput.trim()}
+                className="px-3 py-2 rounded-lg bg-audacia-gold/20 text-audacia-gold text-xs font-medium hover:bg-audacia-gold/30 disabled:opacity-50 transition-colors"
+              >
+                Adicionar
+              </button>
             </div>
           </div>
 
