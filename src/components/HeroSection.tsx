@@ -10,8 +10,8 @@ interface HeroSectionProps {
 
 export function HeroSection({ heroImage }: HeroSectionProps) {
   return (
-    <section className="relative min-h-screen flex items-center pt-24 pb-12 overflow-hidden">
-      <div className="container mx-auto px-4 md:px-8 grid md:grid-cols-2 gap-12 items-center">
+    <section className="relative min-h-screen flex items-center pt-20 pb-12 md:pt-16 md:pb-10 overflow-hidden">
+      <div className="container mx-auto px-4 md:px-8 grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
         
         {/* Text Content */}
         <motion.div 
@@ -21,7 +21,7 @@ export function HeroSection({ heroImage }: HeroSectionProps) {
           className="z-10 text-center md:text-left"
         >
           <motion.h1 
-            className="text-5xl md:text-7xl font-serif font-bold mb-6 leading-[1.1] tracking-tight"
+            className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold mb-4 md:mb-6 leading-[1.1] tracking-tight"
           >
             <span className="text-gold-gradient block mb-2">{siteConfig.hero.tituloParte1}</span>
             <span className="text-white font-light">{siteConfig.hero.tituloParte2}</span><br/>
@@ -29,7 +29,7 @@ export function HeroSection({ heroImage }: HeroSectionProps) {
           </motion.h1>
           
           <motion.p 
-            className="text-lg md:text-xl text-white/90 mb-10 font-sans font-light max-w-lg mx-auto md:mx-0 leading-relaxed"
+            className="text-base md:text-lg lg:text-xl text-white/90 mb-6 md:mb-8 font-sans font-light max-w-lg mx-auto md:mx-0 leading-relaxed"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
@@ -39,7 +39,7 @@ export function HeroSection({ heroImage }: HeroSectionProps) {
           
           <motion.a 
             href="#catalogo"
-            className="btn-shimmer inline-block bg-gold-gradient text-audacia-rose-dark font-bold px-10 py-4 rounded-full text-lg shadow-gold-glow hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition-all duration-300"
+            className="btn-shimmer inline-block bg-gold-gradient text-audacia-rose-dark font-bold px-8 py-3 md:px-10 md:py-4 rounded-full text-base md:text-lg shadow-gold-glow hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition-all duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -56,7 +56,7 @@ export function HeroSection({ heroImage }: HeroSectionProps) {
         >
           <motion.div 
             className="relative"
-            animate={{ y: [0, -15, 0] }}
+            animate={{ y: [0, -10, 0] }}
             transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
           >
             {/* Decorative background circle (Glow mais difuso) */}
@@ -69,7 +69,7 @@ export function HeroSection({ heroImage }: HeroSectionProps) {
                 alt={`Modelo usando roupa ${siteConfig.nomeLoja}`} 
                 width={600}
                 height={800}
-                className="relative max-w-full h-auto max-h-[70vh] rounded-2xl object-cover"
+                className="relative max-w-full h-auto max-h-[55vh] md:max-h-[60vh] lg:max-h-[65vh] rounded-2xl object-cover"
                 priority
               />
               {/* Subtle overlay gradient to blend image with the rose theme */}
