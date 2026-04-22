@@ -69,7 +69,7 @@ export function HeroSection({ heroImage }: HeroSectionProps) {
                 alt={`Modelo usando roupa ${siteConfig.nomeLoja}`} 
                 width={600}
                 height={800}
-                className="relative max-w-full h-auto max-h-[55vh] md:max-h-[60vh] lg:max-h-[65vh] rounded-2xl object-cover"
+                className="relative max-w-full h-auto max-h-[55vh] md:max-h-[60vh] lg:max-h-[70vh] rounded-2xl object-cover object-[center_10%]"
                 priority
               />
               {/* Subtle overlay gradient to blend image with the rose theme */}
