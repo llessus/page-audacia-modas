@@ -241,46 +241,47 @@ export function ProductModal({ produto, onClose }: ProductModalProps) {
           )}
 
           {/* CTA Buttons */}
-          <div className="space-y-3">
-            {/* Adicionar à Sacola (principal) */}
+          <div className="grid grid-cols-2 gap-3 mt-8">
+            {/* Comprar Agora (WhatsApp direto) */}
+            <a
+              href={!isEsgotado ? `https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(
+                `Olá! Tudo bem? Gostaria de comprar o *${produto.nome}* (${formattedPrice}) agora mesmo!`
+              )}` : '#'}
+              target={!isEsgotado ? '_blank' : '_self'}
+              rel="noopener noreferrer"
+              className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm tracking-wider transition-all duration-300 btn-shimmer ${
+                isEsgotado
+                  ? 'bg-white/10 text-white/30 pointer-events-none'
+                  : 'bg-gold-gradient text-audacia-rose-dark shadow-gold-glow hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]'
+              }`}
+            >
+              <MessageCircle className="w-4 h-4" />
+              {isEsgotado ? 'Esgotado' : 'Comprar Agora'}
+            </a>
+
+            {/* Adicionar à Sacola */}
             <button
               onClick={() => !isEsgotado && addItem(produto)}
               disabled={isEsgotado}
-              className={`w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl font-bold text-sm tracking-wider transition-all duration-300 btn-shimmer ${
+              className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm tracking-wider transition-all duration-300 ${
                 isEsgotado
-                  ? 'bg-white/10 text-white/30 cursor-not-allowed'
-                  : isAdded
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  : 'bg-gold-gradient text-audacia-rose-dark shadow-gold-glow hover:shadow-[0_0_30px_rgba(212,175,55,0.5)]'
+                  ? 'bg-white/5 border border-white/10 text-white/20 pointer-events-none'
+                  : 'bg-white/5 border border-audacia-gold/30 text-audacia-gold hover:border-audacia-gold hover:bg-audacia-gold/10'
               }`}
             >
-              {isEsgotado ? (
-                'Produto Esgotado'
-              ) : isAdded ? (
+              {isAdded ? (
                 <>
                   <Check className="w-4 h-4" />
-                  Adicionado à Sacola!
+                  Na Sacola!
                 </>
               ) : (
                 <>
                   <ShoppingBag className="w-4 h-4" />
-                  Adicionar à Sacola
+                  {isEsgotado ? 'Esgotado' : 'Pôr na Sacola'}
                 </>
               )}
             </button>
 
-            {/* Comprar direto via WhatsApp (secundário) */}
-            {!isEsgotado && (
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 text-white/60 hover:text-white hover:border-audacia-gold/30 transition-all text-xs tracking-wider font-medium"
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                Ou pedir direto via WhatsApp
-              </a>
-            )}
           </div>
         </div>
       </div>

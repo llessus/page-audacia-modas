@@ -1,9 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import { ShoppingBag, MessageCircle, ArrowLeft, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingBag, MessageCircle, ArrowLeft, Flame, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useState } from 'react';
 import { siteConfig } from '@/config/siteConfig';
+import { useCart } from '@/context/CartContext';
 import type { Produto } from '@/types/produto';
 import { CORES_DISPONIVEIS } from '@/types/produto';
 
@@ -13,6 +14,8 @@ interface ProductPageClientProps {
 
 export function ProductPageClient({ produto }: ProductPageClientProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { addItem, justAdded } = useCart();
+  const isAdded = justAdded === produto.id;
 
   const allImages = [produto.imagem_url, ...(produto.imagens_extras || [])];
   const isEsgotado = produto.status === 'esgotado';
@@ -170,29 +173,51 @@ export function ProductPageClient({ produto }: ProductPageClientProps) {
             )}
 
             {/* CTAs */}
-            <div className="space-y-3 pt-2">
+            <div className="grid grid-cols-2 gap-3 pt-2">
               <a
-                href={whatsappUrl}
-                target="_blank"
+                href={!isEsgotado ? whatsappUrl : '#'}
+                target={!isEsgotado ? '_blank' : '_self'}
                 rel="noopener noreferrer"
-                className={`w-full flex items-center justify-center gap-2.5 py-4 rounded-xl font-bold tracking-wider transition-all duration-300 btn-shimmer ${
+                className={`flex items-center justify-center gap-2 py-4 rounded-xl font-bold tracking-wider transition-all duration-300 btn-shimmer text-sm ${
                   isEsgotado
                     ? 'bg-white/10 text-white/30 pointer-events-none'
-                    : 'bg-gold-gradient text-audacia-rose-dark shadow-gold-glow hover:shadow-[0_0_30px_rgba(212,175,55,0.5)]'
+                    : 'bg-gold-gradient text-audacia-rose-dark shadow-gold-glow hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]'
                 }`}
               >
                 <MessageCircle className="w-5 h-5" />
-                {isEsgotado ? 'Produto Esgotado' : 'Pedir via WhatsApp'}
+                {isEsgotado ? 'Esgotado' : 'Comprar Agora'}
               </a>
 
-              <a
-                href="/#catalogo"
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 text-white/50 hover:text-white hover:border-audacia-gold/30 transition-all text-sm tracking-wider font-medium"
+              <button
+                onClick={() => !isEsgotado && addItem(produto)}
+                disabled={isEsgotado}
+                className={`flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm tracking-wider transition-all duration-300 ${
+                  isEsgotado
+                    ? 'bg-white/5 border border-white/10 text-white/20 pointer-events-none'
+                    : 'bg-white/5 border border-audacia-gold/30 text-audacia-gold hover:border-audacia-gold hover:bg-audacia-gold/10'
+                }`}
               >
-                <ShoppingBag className="w-4 h-4" />
-                Ver todo o catálogo
-              </a>
+                {isAdded ? (
+                  <>
+                    <Check className="w-5 h-5" />
+                    Na Sacola!
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag className="w-5 h-5" />
+                    {isEsgotado ? 'Esgotado' : 'Pôr na Sacola'}
+                  </>
+                )}
+              </button>
             </div>
+            
+            <a
+              href="/#catalogo"
+              className="mt-3 w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 text-white/50 hover:text-white hover:border-audacia-gold/30 transition-all text-sm tracking-wider font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Continuar Olhando o Catálogo
+            </a>
           </div>
         </div>
       </div>
