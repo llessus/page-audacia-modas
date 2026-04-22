@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { Search, Tag, X, ShoppingBag, Check, Share2, Flame } from 'lucide-react';
+import { Search, Tag, X, ShoppingBag, Check, Share2, Flame, MessageCircle } from 'lucide-react';
 import { siteConfig } from '@/config/siteConfig';
 import { ProductModal } from '@/components/ProductModal';
 import { useCart } from '@/context/CartContext';
@@ -447,37 +447,61 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
                                 </p>
                               )}
 
-                              <button 
-                                disabled={isEsgotado}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (!isEsgotado) {
-                                    handleAddToCart(product, e);
-                                  }
-                                }}
-                                className={`mt-auto relative overflow-hidden px-6 py-3 rounded-full border transition-all duration-300 font-bold text-xs tracking-widest uppercase ${
-                                  isEsgotado 
-                                  ? 'border-white/10 text-white/20 cursor-not-allowed' 
-                                  : isAdded
-                                  ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
-                                  : 'border-audacia-gold/40 text-audacia-gold hover:border-audacia-gold hover:text-audacia-rose-dark group/btn'
-                                }`}
-                              >
-                                {isEsgotado ? 'Produto Esgotado' : isAdded ? (
-                                  <span className="flex items-center justify-center gap-2">
-                                    <Check className="w-4 h-4" />
-                                    Adicionado!
-                                  </span>
-                                ) : (
-                                  <span className="flex items-center justify-center gap-2">
-                                    <ShoppingBag className="w-3.5 h-3.5" />
-                                    Adicionar à Sacola
-                                  </span>
-                                )}
-                                {!isEsgotado && !isAdded && (
-                                  <div className="absolute inset-0 bg-audacia-gold transform scale-x-0 origin-left group-hover/btn:scale-x-100 transition-transform duration-300 -z-10" />
-                                )}
-                              </button>
+                              {/* CTAs */}
+                              <div className="mt-auto pt-4 grid grid-cols-2 gap-2 w-full">
+                                {/* Comprar Agora */}
+                                <button
+                                  disabled={isEsgotado}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!isEsgotado) {
+                                      const formattedPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.preco);
+                                      const whatsappUrl = `https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(
+                                        `Olá! Tudo bem? Gostaria de comprar o *${product.nome}* (${formattedPrice}) agora mesmo!`
+                                      )}`;
+                                      window.open(whatsappUrl, '_blank');
+                                    }
+                                  }}
+                                  className={`relative overflow-hidden px-1 py-3 rounded-xl border transition-all duration-300 font-bold text-[10px] md:text-xs tracking-widest uppercase flex items-center justify-center gap-1.5 ${
+                                    isEsgotado 
+                                    ? 'hidden' 
+                                    : 'bg-gold-gradient text-audacia-rose-dark shadow-gold-glow hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] border-transparent'
+                                  }`}
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                  <span>Comprar</span>
+                                </button>
+
+                                {/* Adicionar à Sacola */}
+                                <button 
+                                  disabled={isEsgotado}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!isEsgotado) {
+                                      handleAddToCart(product, e);
+                                    }
+                                  }}
+                                  className={`relative overflow-hidden px-1 py-3 rounded-xl border transition-all duration-300 font-bold text-[10px] md:text-xs tracking-widest uppercase flex items-center justify-center gap-1.5 ${
+                                    isEsgotado 
+                                    ? 'col-span-2 border-white/10 text-white/20 cursor-not-allowed' 
+                                    : isAdded
+                                    ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
+                                    : 'border-audacia-gold/40 text-audacia-gold hover:border-audacia-gold hover:bg-audacia-gold/10'
+                                  }`}
+                                >
+                                  {isEsgotado ? 'Esgotado' : isAdded ? (
+                                    <>
+                                      <Check className="w-3.5 h-3.5 flex-shrink-0" />
+                                      <span>Na Sacola</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ShoppingBag className="w-3.5 h-3.5 flex-shrink-0" />
+                                      <span>Sacola</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
                             </div>
                           </motion.div>
                         );
