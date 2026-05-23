@@ -12,6 +12,7 @@ interface CartContextType {
   items: CartItem[];
   addItem: (produto: Produto) => void;
   removeItem: (produtoId: string) => void;
+  updateQuantity: (produtoId: string, delta: number) => void;
   clearCart: () => void;
   getTotal: () => number;
   getTotalItems: () => number;
@@ -19,7 +20,8 @@ interface CartContextType {
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
-  justAdded: string | null; // ID do produto recém-adicionado (para animação)
+  justAdded: string | null; // ID do produto rec\u00e9m-adicionado (para anima\u00e7\u00e3o)
+  lastAddedName: string | null; // Nome do produto para toast
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -30,6 +32,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [justAdded, setJustAdded] = useState<string | null>(null);
+  const [lastAddedName, setLastAddedName] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Carregar do localStorage
@@ -63,7 +66,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems(prev => {
       const existing = prev.find(item => item.produto.id === produto.id);
       if (existing) {
-        // Já está na sacola, incrementa
+        // J\u00e1 est\u00e1 na sacola, incrementa
         return prev.map(item =>
           item.produto.id === produto.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -73,11 +76,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return [...prev, { produto, quantity: 1 }];
     });
     setJustAdded(produto.id);
-    setTimeout(() => setJustAdded(null), 1500);
+    setLastAddedName(produto.nome);
+    setTimeout(() => {
+      setJustAdded(null);
+      setLastAddedName(null);
+    }, 2500);
   }, []);
 
   const removeItem = useCallback((produtoId: string) => {
     setItems(prev => prev.filter(item => item.produto.id !== produtoId));
+  }, []);
+
+  const updateQuantity = useCallback((produtoId: string, delta: number) => {
+    setItems(prev => {
+      return prev.map(item => {
+        if (item.produto.id !== produtoId) return item;
+        const newQty = item.quantity + delta;
+        if (newQty <= 0) return item; // N\u00e3o permite zero, usar removeItem para deletar
+        return { ...item, quantity: newQty };
+      });
+    });
   }, []);
 
   const clearCart = useCallback(() => {
@@ -98,10 +116,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider value={{
-      items, addItem, removeItem, clearCart,
+      items, addItem, removeItem, updateQuantity, clearCart,
       getTotal, getTotalItems,
       isOpen, openCart, closeCart, toggleCart,
-      justAdded,
+      justAdded, lastAddedName,
     }}>
       {children}
     </CartContext.Provider>

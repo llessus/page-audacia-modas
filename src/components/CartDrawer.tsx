@@ -7,7 +7,7 @@ import { useCart } from '@/context/CartContext';
 import { siteConfig } from '@/config/siteConfig';
 
 export function CartDrawer() {
-  const { items, removeItem, clearCart, getTotal, getTotalItems, isOpen, closeCart } = useCart();
+  const { items, removeItem, updateQuantity, clearCart, getTotal, getTotalItems, isOpen, closeCart } = useCart();
 
   const formattedTotal = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -15,26 +15,26 @@ export function CartDrawer() {
   }).format(getTotal());
 
   function buildWhatsAppMessage() {
-    let msg = `Ol${String.fromCodePoint(0xE1)}! Quero fazer um pedido da *${siteConfig.nomeLoja}*:\n\n`;
+    let msg = 'Ola! Quero fazer um pedido da *' + siteConfig.nomeLoja + '*:\n\n';
 
     items.forEach((item, i) => {
       const price = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
       }).format(item.produto.preco);
-      msg += `${i + 1}. *${item.produto.nome}* ${String.fromCharCode(0x2014)} ${price}`;
-      if (item.quantity > 1) msg += ` (x${item.quantity})`;
-      msg += `\n`;
+      msg += (i + 1) + '. *' + item.produto.nome + '* - ' + price;
+      if (item.quantity > 1) msg += ' (x' + item.quantity + ')';
+      msg += '\n';
     });
 
-    msg += `\n*Total: ${formattedTotal}*`;
-    msg += `\n\nAguardo confirma${String.fromCodePoint(0xE7, 0xE3, 0x6F)}!`;
+    msg += '\n*Total: ' + formattedTotal + '*';
+    msg += '\n\nAguardo confirmacao!';
     return msg;
   }
 
   function handleSendOrder() {
     const text = encodeURIComponent(buildWhatsAppMessage());
-    window.open(`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${text}`, '_blank');
+    window.open('https://wa.me/' + siteConfig.whatsappDDIeDDD + '?text=' + text, '_blank');
   }
 
   return (
@@ -92,7 +92,7 @@ export function CartDrawer() {
                       <ShoppingBag className="w-8 h-8 text-audacia-gold/30" />
                     </div>
                     <p className="text-white/40 font-serif text-lg mb-1">Sacola vazia</p>
-                    <p className="text-white/25 text-sm">Explore o catálogo e adicione peças!</p>
+                    <p className="text-white/25 text-sm">Explore o catalogo e adicione pecas!</p>
                   </motion.div>
                 ) : (
                   items.map((item) => {
@@ -129,13 +129,33 @@ export function CartDrawer() {
                             <span className="text-audacia-gold/50 text-[10px] tracking-wider uppercase">{item.produto.categoria}</span>
                           )}
                           <p className="text-audacia-gold font-semibold text-sm mt-0.5">{price}</p>
+
+                          {/* Quantity Controls */}
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <button
+                              onClick={() => updateQuantity(item.produto.id, -1)}
+                              disabled={item.quantity <= 1}
+                              className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-audacia-gold/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                              aria-label="Diminuir quantidade"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="text-white text-xs font-bold min-w-[20px] text-center">{item.quantity}</span>
+                            <button
+                              onClick={() => updateQuantity(item.produto.id, 1)}
+                              className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-audacia-gold/30 transition-all"
+                              aria-label="Aumentar quantidade"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
 
                         {/* Remove */}
                         <button
                           onClick={() => removeItem(item.produto.id)}
                           className="p-2 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                          aria-label={`Remover ${item.produto.nome}`}
+                          aria-label={'Remover ' + item.produto.nome}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
