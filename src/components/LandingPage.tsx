@@ -12,7 +12,6 @@ import { FloatingCart } from '@/components/FloatingCart';
 import { CartDrawer } from '@/components/CartDrawer';
 import { CartToast } from '@/components/CartToast';
 import { BackToTop } from '@/components/BackToTop';
-import { CartProvider } from '@/context/CartContext';
 import { TrustStrip, WaveDividerDown, WaveDividerUp } from '@/components/Decorators';
 import type { Produto } from '@/types/produto';
 
@@ -23,24 +22,22 @@ interface LandingPageProps {
 
 export function LandingPage({ produtos, heroImage }: LandingPageProps) {
   return (
-    <CartProvider>
-      <main className="w-full relative overflow-x-hidden">
-        <Header />
-        <HeroSection heroImage={heroImage} />
-        <TrustStrip />
-        <WaveDividerDown />
-        <MiniCatalog produtosIniciais={produtos} />
-        <WaveDividerUp />
-        <WhatsAppPurchaseSection />
-        <TestimonialsSection />
-        <InstagramSection produtos={produtos} />
-        <Footer />
-        <FloatingWhatsApp />
-        <FloatingCart />
-        <CartDrawer />
-        <CartToast />
-        <BackToTop />
-      </main>
-    </CartProvider>
+    <main className="w-full relative overflow-x-hidden">
+      <Header />
+      <HeroSection heroImage={heroImage} />
+      <TrustStrip />
+      <WaveDividerDown />
+      <MiniCatalog produtosIniciais={produtos} />
+      <WaveDividerUp />
+      <WhatsAppPurchaseSection />
+      <TestimonialsSection />
+      <InstagramSection produtos={produtos} />
+      <Footer />
+      <FloatingWhatsApp />
+      <FloatingCart />
+      <CartDrawer />
+      <CartToast />
+      <BackToTop />
+    </main>
   );
 }

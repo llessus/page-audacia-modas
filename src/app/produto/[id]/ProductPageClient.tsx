@@ -5,6 +5,9 @@ import { ShoppingBag, MessageCircle, ArrowLeft, Flame, ChevronLeft, ChevronRight
 import { useState } from 'react';
 import { siteConfig } from '@/config/siteConfig';
 import { useCart } from '@/context/CartContext';
+import { CartDrawer } from '@/components/CartDrawer';
+import { CartToast } from '@/components/CartToast';
+import { FloatingCart } from '@/components/FloatingCart';
 import type { Produto } from '@/types/produto';
 import { CORES_DISPONIVEIS } from '@/types/produto';
 
@@ -226,6 +229,9 @@ export function ProductPageClient({ produto }: ProductPageClientProps) {
       <footer className="text-center py-6 text-white/20 text-xs tracking-wider">
         © {new Date().getFullYear()} {siteConfig.nomeLoja}
       </footer>
+      <FloatingCart />
+      <CartDrawer />
+      <CartToast />
     </div>
   );
 }

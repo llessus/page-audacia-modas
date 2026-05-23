@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { CartProvider } from '@/context/CartContext';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://page-audacia-modas.vercel.app'),
@@ -43,7 +44,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="bg-audacia-rose font-sans text-white antialiased">
-        {children}
+        <CartProvider>
+          {children}
+        </CartProvider>
       </body>
     </html>
   );
