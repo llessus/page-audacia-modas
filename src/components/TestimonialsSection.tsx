@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Star, Quote } from 'lucide-react';
+import { siteConfig } from '@/config/siteConfig';
 
 interface Depoimento {
   nome: string;
@@ -175,7 +176,7 @@ export function TestimonialsSection() {
           transition={{ delay: 0.4 }}
         >
           <a
-            href="https://maps.app.goo.gl/WAUnjuntNJrFP35W6"
+            href={siteConfig.linkEndereco}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/10 text-white/50 hover:text-audacia-gold hover:border-audacia-gold/30 transition-all duration-300 text-sm tracking-wide"

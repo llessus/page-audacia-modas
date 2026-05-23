@@ -19,7 +19,7 @@ export const siteConfig: SiteConfig = {
   linkInstagram: "https://www.instagram.com/lojaaudaciamoda?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
   arrobaInstagram: "@lojaaudaciamoda",
   enderecoCompleto: "Santa Maria Norte - DF",
-  linkEndereco: "https://maps.app.goo.gl/WAUnjuntNJrFP35W6",
+  linkEndereco: "https://share.google/0YMLHTfPhx8flVNY9",
   hero: {
     tituloParte1: "Audácia Modas:",
     tituloParte2: "Vista sua",
