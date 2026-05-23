@@ -15,20 +15,20 @@ export function CartDrawer() {
   }).format(getTotal());
 
   function buildWhatsAppMessage() {
-    let msg = `Olá! \u{1F6CD}\u{FE0F} Quero fazer um pedido da *${siteConfig.nomeLoja}*:\n\n`;
+    let msg = `Ol${String.fromCodePoint(0xE1)}! Quero fazer um pedido da *${siteConfig.nomeLoja}*:\n\n`;
 
     items.forEach((item, i) => {
       const price = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
       }).format(item.produto.preco);
-      msg += `${i + 1}. *${item.produto.nome}* — ${price}`;
+      msg += `${i + 1}. *${item.produto.nome}* ${String.fromCharCode(0x2014)} ${price}`;
       if (item.quantity > 1) msg += ` (x${item.quantity})`;
       msg += `\n`;
     });
 
-    msg += `\n\u{1F4B0} *Total: ${formattedTotal}*`;
-    msg += `\n\nAguardo confirmação! \u{1F60A}`;
+    msg += `\n*Total: ${formattedTotal}*`;
+    msg += `\n\nAguardo confirma${String.fromCodePoint(0xE7, 0xE3, 0x6F)}!`;
     return msg;
   }
 

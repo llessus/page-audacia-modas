@@ -1,12 +1,16 @@
 'use client';
 
 import { MessageCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { siteConfig } from '@/config/siteConfig';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const router = useRouter();
+  const tapCountRef = useRef(0);
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +19,24 @@ export function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogoTap = useCallback(() => {
+    tapCountRef.current += 1;
+
+    if (tapTimerRef.current) {
+      clearTimeout(tapTimerRef.current);
+    }
+
+    if (tapCountRef.current >= 3) {
+      tapCountRef.current = 0;
+      router.push('/admin');
+      return;
+    }
+
+    tapTimerRef.current = setTimeout(() => {
+      tapCountRef.current = 0;
+    }, 800);
+  }, [router]);
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out px-4 md:px-8 ${
@@ -25,8 +47,14 @@ export function Header() {
           ? 'glassmorphism rounded-full px-6 py-2 shadow-gold-glow border-audacia-gold/30' 
           : 'bg-transparent px-2 py-2 border-transparent'
       }`}>
-        {/* Logo */}
-        <div className="flex items-center gap-2">
+        {/* Logo — 3 toques rápidos abre o admin */}
+        <div
+          className="flex items-center gap-2 cursor-pointer select-none"
+          onClick={handleLogoTap}
+          role="button"
+          tabIndex={0}
+          aria-label="Logo"
+        >
           <Image 
             src="/images/logo.png"
             alt={siteConfig.nomeLoja} 
@@ -39,7 +67,7 @@ export function Header() {
 
         {/* WhatsApp Button */}
         <a
-          href={`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(`Olá! Vi a landing page da ${siteConfig.nomeLoja} e quero falar com o atendimento.`)}`}
+          href={`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(`Ol${String.fromCodePoint(0xE1)}! Vi a landing page da ${siteConfig.nomeLoja} e quero falar com o atendimento.`)}`}
           target="_blank"
           rel="noopener noreferrer"
           className={`group flex items-center gap-2 px-6 py-2.5 rounded-full border transition-all duration-300 ${
