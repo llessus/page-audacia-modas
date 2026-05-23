@@ -14,14 +14,14 @@ export const metadata: Metadata = {
     description:
       'Moda feminina premium com atendimento personalizado. Sua nova peça favorita está aqui! 👗✨',
     locale: 'pt_BR',
-    images: ['/images/logo.png'],
+    images: ['/images/og-share.png'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Audácia Modas | Vista sua Essência',
     description:
       'Moda feminina premium com atendimento personalizado. Sua nova peça favorita está aqui! 👗✨',
-    images: ['/images/logo.png'],
+    images: ['/images/og-share.png'],
   },
   icons: {
     icon: '/images/logo.png',
