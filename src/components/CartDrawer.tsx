@@ -15,7 +15,7 @@ export function CartDrawer() {
   }).format(getTotal());
 
   function buildWhatsAppMessage() {
-    let msg = `Olá! 🛍️ Quero fazer um pedido da *${siteConfig.nomeLoja}*:\n\n`;
+    let msg = `Olá! \u{1F6CD}\u{FE0F} Quero fazer um pedido da *${siteConfig.nomeLoja}*:\n\n`;
 
     items.forEach((item, i) => {
       const price = new Intl.NumberFormat('pt-BR', {
@@ -27,8 +27,8 @@ export function CartDrawer() {
       msg += `\n`;
     });
 
-    msg += `\n💰 *Total: ${formattedTotal}*`;
-    msg += `\n\nAguardo confirmação! 😊`;
+    msg += `\n\u{1F4B0} *Total: ${formattedTotal}*`;
+    msg += `\n\nAguardo confirmação! \u{1F60A}`;
     return msg;
   }
 
