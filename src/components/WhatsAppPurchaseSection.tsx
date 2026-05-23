@@ -7,7 +7,7 @@ import { siteConfig } from '@/config/siteConfig';
 export function WhatsAppPurchaseSection() {
   // CONFIGURAÇÃO DO WHATSAPP:
   const WHATSAPP_NUMBER = siteConfig.whatsappDDIeDDD; 
-  const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Oi! Vi a landing page da ${siteConfig.nomeLoja} e quero falar com a estilista!`)}`;
+  const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Ola! Achei as roupas da ${siteConfig.nomeLoja} muito interessantes e gostaria de tirar algumas duvidas com o atendimento!`)}`;
 
   return (
     <section id="whatsapp-purchase" className="py-24 relative z-10 overflow-hidden">
@@ -55,7 +55,7 @@ export function WhatsAppPurchaseSection() {
               <span className="relative inline-flex rounded-full h-3 w-3 bg-[#25D366]"></span>
             </span>
             <p className="text-white/70 text-sm font-medium tracking-wide">
-              Estilista disponível agora · Seg a Sáb, 9h às 19h
+              Atendimento disponível agora · Seg a Sáb, 9h às 19h
             </p>
           </div>
         </motion.div>

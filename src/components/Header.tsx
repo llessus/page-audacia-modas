@@ -67,7 +67,7 @@ export function Header() {
 
         {/* WhatsApp Button */}
         <a
-          href={`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(`Ol${String.fromCodePoint(0xE1)}! Vi a landing page da ${siteConfig.nomeLoja} e quero falar com o atendimento.`)}`}
+          href={`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(`Ola! Achei a ${siteConfig.nomeLoja} interessante e gostaria de ver as roupas e tirar algumas duvidas.`)}`}
           target="_blank"
           rel="noopener noreferrer"
           className={`group flex items-center gap-2 px-6 py-2.5 rounded-full border transition-all duration-300 ${
