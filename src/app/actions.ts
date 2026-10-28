@@ -27,6 +27,7 @@ async function requireAdmin(): Promise<ActionResponse | null> {
 function revalidateAll() {
   revalidatePath('/admin/dashboard');
   revalidatePath('/');
+  revalidatePath('/bio');
 }
 
 function getExtraFiles(formData: FormData): File[] {
