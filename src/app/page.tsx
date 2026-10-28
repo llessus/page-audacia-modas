@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
-import { getSiteConfig, getProdutosDisponiveis, getHeroImage } from '@/lib/db';
+import { getSiteConfig, getProdutosDisponiveis } from '@/lib/db';
+import { BIO_CONFIG } from '@/components/bio/bioConfig';
 import { BioLinksClient } from '@/components/BioLinksClient';
 
-export const dynamic = 'force-dynamic';
+// Cache ISR de 60s na CDN da Vercel (abre instantaneamente no celular!)
+// Quando você edita algo no Admin, o revalidatePath('/') atualiza na mesma hora.
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const [config, heroImage] = await Promise.all([
-    getSiteConfig(),
-    getHeroImage().catch(() => '/images/og-share.png'),
-  ]);
+  const config = await getSiteConfig();
 
   const title = `${config.nomeLoja} | ${config.hero.tituloParte2} ${config.hero.tituloParte3}`;
-  const description = `${config.nomeLoja} em ${config.enderecoCompleto} — Confira a nova coleção no Catálogo Online, fale com nossa vendedora no WhatsApp ou visite nossa loja física.`;
+  const description = `${config.nomeLoja} em ${config.enderecoCompleto} — Fale com nossa vendedora no WhatsApp, visite nossa loja física ou confira nosso catálogo.`;
 
   return {
     title,
@@ -21,29 +21,22 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       locale: 'pt_BR',
-      images: [heroImage || '/images/og-share.png'],
+      images: ['/images/og-share.png'],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [heroImage || '/images/og-share.png'],
+      images: ['/images/og-share.png'],
     },
   };
 }
 
 export default async function HomePage() {
-  const [config, produtos, heroImage] = await Promise.all([
+  const [config, produtos] = await Promise.all([
     getSiteConfig(),
-    getProdutosDisponiveis().catch(() => []),
-    getHeroImage().catch(() => '/images/hero.png'),
+    BIO_CONFIG.catalogoEmBreve ? Promise.resolve([]) : getProdutosDisponiveis().catch(() => []),
   ]);
 
-  return (
-    <BioLinksClient
-      config={config}
-      produtos={produtos}
-      heroImage={heroImage}
-    />
-  );
+  return <BioLinksClient config={config} produtos={produtos} />;
 }

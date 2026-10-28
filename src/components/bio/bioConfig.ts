@@ -9,6 +9,13 @@ export interface HorarioDia {
  * Edite aqui o banner de campanha, horário de funcionamento e depoimentos curtos.
  */
 export const BIO_CONFIG = {
+  /**
+   * Enquanto estiver `true`, o botão "Catálogo Online Completo" fica
+   * desabilitado (cinza/fosco) com o selo "EM BREVE".
+   * Quando terminar de cadastrar as roupas, mude para `false`!
+   */
+  catalogoEmBreve: true,
+
   campanha: {
     badge: 'Nova Coleção',
     titulo: 'Peças exclusivas da semana ✨',

@@ -1,6 +1,21 @@
 import type { Metadata } from 'next';
+import { Playfair_Display, Montserrat } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
+  variable: '--font-playfair',
+});
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-montserrat',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://page-audacia-modas.vercel.app'),
@@ -42,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={`${playfair.variable} ${montserrat.variable}`}>
       <body className="bg-audacia-rose font-sans text-white antialiased">
         <CartProvider>
           {children}

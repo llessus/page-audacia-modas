@@ -19,8 +19,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        serif: ['"Playfair Display"', 'serif'],
-        sans: ['Montserrat', 'sans-serif'],
+        serif: ['var(--font-playfair)', '"Playfair Display"', 'serif'],
+        sans: ['var(--font-montserrat)', 'Montserrat', 'sans-serif'],
       },
       backgroundImage: {
         'gold-gradient': 'linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)',

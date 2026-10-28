@@ -5,7 +5,11 @@ import Link from 'next/link';
 import { Sparkles, ArrowUpRight } from 'lucide-react';
 import { BIO_CONFIG, getStoreOpenStatus } from './bioConfig';
 
-export function BioHighlightCard() {
+interface BioHighlightCardProps {
+  whatsappHref?: string;
+}
+
+export function BioHighlightCard({ whatsappHref }: BioHighlightCardProps) {
   const [status, setStatus] = useState<{ isOpen: boolean; label: string }>({
     isOpen: true,
     label: 'Atendimento Online',
@@ -15,15 +19,10 @@ export function BioHighlightCard() {
     setStatus(getStoreOpenStatus());
   }, []);
 
-  const { campanha } = BIO_CONFIG;
+  const { campanha, catalogoEmBreve } = BIO_CONFIG;
 
   return (
     <div className="w-full glassmorphism-gold rounded-3xl p-5 sm:p-6 relative overflow-hidden border border-audacia-gold/30">
-      <div
-        aria-hidden="true"
-        className="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-audacia-gold/15 blur-2xl pointer-events-none"
-      />
-
       {/* Linha superior: Badge de campanha + Status Aberto/Fechado */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-audacia-gold/20 border border-audacia-gold/40 text-audacia-gold-light text-[11px] font-bold uppercase tracking-wider">
@@ -55,14 +54,25 @@ export function BioHighlightCard() {
         {campanha.subtitulo}
       </p>
 
-      <Link
-        href={campanha.ctaHref}
-        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-audacia-gold-light hover:text-white transition-colors min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-audacia-gold rounded-lg"
-      >
-        <span>{campanha.ctaTexto}</span>
-        <ArrowUpRight className="w-4 h-4" />
-      </Link>
+      {catalogoEmBreve && whatsappHref ? (
+        <a
+          href={whatsappHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-audacia-gold-light hover:text-white transition-colors min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-audacia-gold rounded-lg"
+        >
+          <span>Pedir fotos pelo WhatsApp</span>
+          <ArrowUpRight className="w-4 h-4" />
+        </a>
+      ) : (
+        <Link
+          href={campanha.ctaHref}
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-audacia-gold-light hover:text-white transition-colors min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-audacia-gold rounded-lg"
+        >
+          <span>{campanha.ctaTexto}</span>
+          <ArrowUpRight className="w-4 h-4" />
+        </Link>
+      )}
     </div>
   );
 }
-
