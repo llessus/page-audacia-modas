@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS produtos (
   quantidade INT DEFAULT -1,
   tamanhos   TEXT[] DEFAULT '{}',
   cores      TEXT[] DEFAULT '{}',
+  destaque   BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

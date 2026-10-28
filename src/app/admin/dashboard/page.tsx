@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getProdutos, getHeroImage } from '@/lib/db';
+import { getProdutos, getHeroImage, getSiteConfig } from '@/lib/db';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { verifyJWT } from '@/lib/auth';
 import type { Metadata } from 'next';
@@ -40,6 +40,7 @@ export default async function DashboardPage() {
   }
 
   const heroImage = await getHeroImage();
+  const siteConfig = await getSiteConfig();
 
-  return <AdminDashboard produtos={produtos} logoutAction={logoutAction} heroImage={heroImage} />;
+  return <AdminDashboard produtos={produtos} logoutAction={logoutAction} heroImage={heroImage} siteConfig={siteConfig} />;
 }

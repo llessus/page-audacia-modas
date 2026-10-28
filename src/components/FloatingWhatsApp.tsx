@@ -1,9 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { siteConfig } from '@/config/siteConfig';
+import { useSiteConfig } from '@/context/SiteConfigContext';
 
 export function FloatingWhatsApp() {
+  const siteConfig = useSiteConfig();
   const whatsappUrl = `https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(
     'Olá! Gostaria de tirar uma dúvida sobre as roupas.'
   )}`;

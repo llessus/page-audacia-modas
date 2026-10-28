@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { uploadProduct } from '@/app/actions';
-import { Camera, Upload, Sparkles, X, Tag, ChevronDown, FileText, Ruler, Palette, Package, Plus } from 'lucide-react';
+import { Camera, Upload, Sparkles, X, Tag, ChevronDown, FileText, Ruler, Palette, Package, Plus, Star } from 'lucide-react';
+import { ProductPreviewCard } from '@/components/admin/ProductPreviewCard';
 import Image from 'next/image';
 import { TAMANHOS_DISPONIVEIS, CORES_DISPONIVEIS } from '@/types/produto';
 
@@ -28,6 +29,11 @@ export function AdminForm() {
   const [customColorInput, setCustomColorInput] = useState('');
   const [stockMode, setStockMode] = useState<'unlimited' | 'limited'>('unlimited');
   const [stockQty, setStockQty] = useState(1);
+  const [nome, setNome] = useState('');
+  const [preco, setPreco] = useState('');
+  const [categoriaSel, setCategoriaSel] = useState(CATEGORIAS_PADRAO[0]);
+  const [novaCategoria, setNovaCategoria] = useState('');
+  const [destaque, setDestaque] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const extraFileRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -79,6 +85,7 @@ export function AdminForm() {
   }
 
   function handleCategoriaChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setCategoriaSel(e.target.value);
     setShowNovaCategoria(e.target.value === '__nova__');
   }
 
@@ -114,6 +121,7 @@ export function AdminForm() {
     formData.set('tamanhos', JSON.stringify(selectedSizes));
     formData.set('cores', JSON.stringify(selectedColors));
     formData.set('quantidade', stockMode === 'unlimited' ? '-1' : String(stockQty));
+    formData.set('destaque', String(destaque));
 
     try {
       const result = await uploadProduct(formData);
@@ -128,6 +136,11 @@ export function AdminForm() {
         setSelectedColors([]);
         setStockMode('unlimited');
         setStockQty(1);
+        setNome('');
+        setPreco('');
+        setCategoriaSel(CATEGORIAS_PADRAO[0]);
+        setNovaCategoria('');
+        setDestaque(false);
       } else {
         setFeedback({ type: 'error', message: result.message });
       }
@@ -177,6 +190,9 @@ export function AdminForm() {
             type="text"
             required
             placeholder="Ex: Vestido Dourado Verão"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            maxLength={120}
             className={inputClass}
             disabled={isLoading}
           />
@@ -199,6 +215,8 @@ export function AdminForm() {
               min="0.01"
               required
               placeholder="389.90"
+              value={preco}
+              onChange={(e) => setPreco(e.target.value)}
               className={`${inputClass} pl-12`}
               disabled={isLoading}
             />
@@ -217,6 +235,7 @@ export function AdminForm() {
             <select
               id="product-categoria"
               name="categoria"
+              value={categoriaSel}
               onChange={handleCategoriaChange}
               className={`${inputClass} appearance-none cursor-pointer pr-10`}
               disabled={isLoading}
@@ -240,6 +259,8 @@ export function AdminForm() {
                 name="novaCategoria"
                 type="text"
                 placeholder="Digite o nome da nova categoria"
+                value={novaCategoria}
+                onChange={(e) => setNovaCategoria(e.target.value)}
                 className={inputClass}
                 disabled={isLoading}
                 autoFocus
@@ -527,8 +548,36 @@ export function AdminForm() {
           </div>
         </div>
 
-        {/* Submit */}
-        <button
+        {/* Destaque */}
+        <label className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-audacia-gold/20 bg-white/5 cursor-pointer select-none">
+          <span className="flex items-center gap-2 text-sm text-white/80">
+            <Star className={`w-4 h-4 ${destaque ? 'fill-audacia-gold text-audacia-gold' : 'text-white/40'}`} />
+            Peça em destaque
+          </span>
+          <input
+            type="checkbox"
+            checked={destaque}
+            onChange={(e) => setDestaque(e.target.checked)}
+            className="h-4 w-4 accent-[#d4af37]"
+            disabled={isLoading}
+          />
+        </label>
+
+        {/* Preview em tempo real */}
+        <ProductPreviewCard
+          data={{
+            nome,
+            preco: Number(String(preco).replace(',', '.')) || 0,
+            categoria: showNovaCategoria ? (novaCategoria.trim() || 'Nova categoria') : categoriaSel,
+            imagem: preview,
+            destaque,
+            tamanhos: selectedSizes,
+            cores: selectedColors,
+            quantidade: stockMode === 'unlimited' ? -1 : stockQty,
+          }}
+        />
+
+        {/* Submit */}        <button
           type="submit"
           disabled={isLoading}
           className="w-full py-3.5 rounded-xl bg-gold-gradient text-audacia-rose-dark font-bold text-sm tracking-wider transition-all duration-300 shadow-gold-glow hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 btn-shimmer"

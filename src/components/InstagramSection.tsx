@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Instagram } from 'lucide-react';
-import { siteConfig } from '@/config/siteConfig';
+import { useSiteConfig } from '@/context/SiteConfigContext';
 import Image from 'next/image';
 import type { Produto } from '@/types/produto';
 
@@ -11,6 +11,7 @@ interface InstagramSectionProps {
 }
 
 export function InstagramSection({ produtos }: InstagramSectionProps) {
+  const siteConfig = useSiteConfig();
   // Pega até 6 fotos dos produtos para montar o "feed"
   const fotos = produtos
     .filter(p => p.status === 'disponivel' && p.imagem_url)

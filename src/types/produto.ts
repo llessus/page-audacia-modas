@@ -14,6 +14,8 @@ export interface Produto {
   cores: string[];
   // Feature 2: Múltiplas Fotos
   imagens_extras: string[];
+  // Peça em destaque na vitrine
+  destaque: boolean;
 }
 
 export interface ActionResponse {

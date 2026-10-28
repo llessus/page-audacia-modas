@@ -3,7 +3,8 @@
 import { useEffect, useCallback, useState } from 'react';
 import Image from 'next/image';
 import { X, ShoppingBag, ChevronLeft, ChevronRight, MessageCircle, Flame, Check } from 'lucide-react';
-import { siteConfig } from '@/config/siteConfig';
+import { useSiteConfig } from '@/context/SiteConfigContext';
+import { buildProductPurchaseLink } from '@/lib/whatsapp';
 import { useCart } from '@/context/CartContext';
 import type { Produto } from '@/types/produto';
 import { CORES_DISPONIVEIS } from '@/types/produto';
@@ -14,7 +15,10 @@ interface ProductModalProps {
 }
 
 export function ProductModal({ produto, onClose }: ProductModalProps) {
+  const siteConfig = useSiteConfig();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedSize, setSelectedSize] = useState<string | undefined>();
+  const [selectedColor, setSelectedColor] = useState<string | undefined>();
   const { addItem, justAdded } = useCart();
 
   // Todas as imagens: principal + extras
@@ -25,6 +29,8 @@ export function ProductModal({ produto, onClose }: ProductModalProps) {
   // Reset image index quando muda o produto
   useEffect(() => {
     setCurrentImageIndex(0);
+    setSelectedSize(undefined);
+    setSelectedColor(undefined);
   }, [produto?.id]);
 
   // Fechar com ESC
@@ -63,9 +69,6 @@ export function ProductModal({ produto, onClose }: ProductModalProps) {
     currency: 'BRL',
   }).format(produto.preco);
 
-  const whatsappUrl = `https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(
-    `Olá! Vi o catálogo e tenho interesse no *${produto.nome}* (${formattedPrice})`
-  )}`;
 
   return (
     <div
@@ -199,12 +202,22 @@ export function ProductModal({ produto, onClose }: ProductModalProps) {
           {/* Tamanhos disponíveis */}
           {produto.tamanhos && produto.tamanhos.length > 0 && (
             <div className="mb-4">
-              <p className="text-white/40 text-xs tracking-wider uppercase mb-2">Tamanhos disponíveis</p>
+              <p className="text-white/40 text-xs tracking-wider uppercase mb-2">Tamanhos disponíveis <span className="normal-case text-white/30">(toque para escolher)</span></p>
               <div className="flex flex-wrap gap-2">
                 {produto.tamanhos.map(t => (
-                  <span key={t} className="px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider bg-white/5 border border-white/10 text-white/70">
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setSelectedSize(prev => (prev === t ? undefined : t))}
+                    aria-pressed={selectedSize === t}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider border transition-all ${
+                      selectedSize === t
+                        ? 'bg-audacia-gold text-audacia-rose-dark border-audacia-gold'
+                        : 'bg-white/5 border-white/10 text-white/70 hover:border-audacia-gold/40'
+                    }`}
+                  >
                     {t}
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -218,13 +231,21 @@ export function ProductModal({ produto, onClose }: ProductModalProps) {
                 {produto.cores.map(c => {
                   const corInfo = CORES_DISPONIVEIS.find(cd => cd.nome === c);
                   return (
-                    <div key={c} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setSelectedColor(prev => (prev === c ? undefined : c))}
+                      aria-pressed={selectedColor === c}
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all ${
+                        selectedColor === c ? 'bg-audacia-gold/15 border-audacia-gold' : 'bg-white/5 border-white/10 hover:border-audacia-gold/40'
+                      }`}
+                    >
                       <span
                         className="w-3.5 h-3.5 rounded-full border border-white/20"
                         style={{ backgroundColor: corInfo?.hex || '#888' }}
                       />
                       <span className="text-white/60 text-xs">{c}</span>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -244,9 +265,8 @@ export function ProductModal({ produto, onClose }: ProductModalProps) {
           <div className="grid grid-cols-2 gap-3 mt-8">
             {/* Comprar Agora (WhatsApp direto) */}
             <a
-              href={!isEsgotado ? `https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(
-                `Olá! Tudo bem? Gostaria de comprar o *${produto.nome}* (${formattedPrice}) agora mesmo!`
-              )}` : '#'}
+              href={!isEsgotado ? buildProductPurchaseLink(siteConfig, produto, { size: selectedSize, color: selectedColor }) : '#'}
+
               target={!isEsgotado ? '_blank' : '_self'}
               rel="noopener noreferrer"
               className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm tracking-wider transition-all duration-300 btn-shimmer ${

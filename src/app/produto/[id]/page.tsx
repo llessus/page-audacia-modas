@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getProdutoById } from '@/lib/db';
-import { siteConfig } from '@/config/siteConfig';
+import { getProdutoById, getSiteConfig } from '@/lib/db';
+import { SiteConfigProvider } from '@/context/SiteConfigContext';
 import { ProductPageClient } from './ProductPageClient';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const produto = await getProdutoById(id);
+  const [produto, siteConfig] = await Promise.all([getProdutoById(id), getSiteConfig()]);
 
   if (!produto) {
     return {
@@ -51,11 +51,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ProdutoPage({ params }: PageProps) {
   const { id } = await params;
-  const produto = await getProdutoById(id);
+  const [produto, config] = await Promise.all([getProdutoById(id), getSiteConfig()]);
 
   if (!produto) {
     notFound();
   }
 
-  return <ProductPageClient produto={produto} />;
+  return (
+    <SiteConfigProvider config={config}>
+      <ProductPageClient produto={produto} />
+    </SiteConfigProvider>
+  );
 }

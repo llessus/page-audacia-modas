@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { deleteProduct, toggleStatus } from '@/app/actions';
-import { Trash2, ToggleLeft, ToggleRight, Package, Pencil } from 'lucide-react';
+import { deleteProduct, toggleStatus, toggleDestaque } from '@/app/actions';
+import { Trash2, Package, Pencil, Star } from 'lucide-react';
+import { ConfirmDeleteModal } from '@/components/admin/ConfirmDeleteModal';
 import Image from 'next/image';
 import { EditProductModal } from '@/components/admin/EditProductModal';
 import type { Produto } from '@/types/produto';
@@ -22,10 +23,24 @@ export function ProductCard({ produto }: ProductCardProps) {
   async function handleDelete() {
     setIsDeleting(true);
     try {
-      await deleteProduct(produto.id);
+      const res = await deleteProduct(produto.id);
+      if (!res.success) {
+        alert(res.message);
+        setIsDeleting(false);
+        setShowConfirm(false);
+      }
+      // em sucesso o card some após a revalidação da página
     } catch {
       setIsDeleting(false);
       setShowConfirm(false);
+    }
+  }
+
+  async function handleDestaque() {
+    try {
+      await toggleDestaque(produto.id);
+    } catch {
+      // revalidação atualiza o estado
     }
   }
 
@@ -132,36 +147,41 @@ export function ProductCard({ produto }: ProductCardProps) {
               <Pencil className="w-4 h-4" />
             </button>
 
+            {/* Destaque */}
+            <button
+              onClick={handleDestaque}
+              disabled={isDeleting}
+              className={`p-2.5 rounded-xl border transition-all duration-300 disabled:opacity-40 min-w-[42px] min-h-[44px] flex items-center justify-center ${
+                produto.destaque
+                  ? 'border-audacia-gold/60 text-audacia-gold bg-audacia-gold/10'
+                  : 'border-white/10 text-white/40 hover:text-audacia-gold hover:border-audacia-gold/40'
+              }`}
+              title={produto.destaque ? 'Remover destaque' : 'Marcar como destaque'}
+              aria-pressed={produto.destaque}
+            >
+              <Star className={`w-4 h-4 ${produto.destaque ? 'fill-current' : ''}`} />
+            </button>
+
             {/* Delete */}
-            {!showConfirm ? (
-              <button
-                onClick={() => setShowConfirm(true)}
-                disabled={isDeleting}
-                className="p-2.5 rounded-xl border border-white/10 text-red-400/50 hover:text-red-400 hover:border-red-500/40 transition-all duration-300 disabled:opacity-40 min-w-[42px] min-h-[44px] flex items-center justify-center"
-                title="Excluir produto"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            ) : (
-              <div className="flex gap-1 animate-in fade-in slide-in-from-right-2">
-                <button
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-[10px] font-bold hover:bg-red-500/30 transition-all min-h-[44px]"
-                >
-                  {isDeleting ? '...' : 'Sim'}
-                </button>
-                <button
-                  onClick={() => setShowConfirm(false)}
-                  className="px-3 py-2 rounded-lg bg-white/5 text-white/40 text-[10px] hover:bg-white/10 transition-all min-h-[44px]"
-                >
-                  Não
-                </button>
-              </div>
-            )}
+            <button
+              onClick={() => setShowConfirm(true)}
+              disabled={isDeleting}
+              className="p-2.5 rounded-xl border border-white/10 text-red-400/50 hover:text-red-400 hover:border-red-500/40 transition-all duration-300 disabled:opacity-40 min-w-[42px] min-h-[44px] flex items-center justify-center"
+              title="Excluir produto"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
+
+      <ConfirmDeleteModal
+        open={showConfirm}
+        nome={produto.nome}
+        isLoading={isDeleting}
+        onConfirm={handleDelete}
+        onCancel={() => setShowConfirm(false)}
+      />
 
       {/* Edit Modal */}
       <EditProductModal

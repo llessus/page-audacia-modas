@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { ShoppingBag, MessageCircle, ArrowLeft, Flame, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useState } from 'react';
-import { siteConfig } from '@/config/siteConfig';
+import { useSiteConfig } from '@/context/SiteConfigContext';
 import { useCart } from '@/context/CartContext';
 import { CartDrawer } from '@/components/CartDrawer';
 import { CartToast } from '@/components/CartToast';
@@ -16,6 +16,7 @@ interface ProductPageClientProps {
 }
 
 export function ProductPageClient({ produto }: ProductPageClientProps) {
+  const siteConfig = useSiteConfig();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addItem, justAdded } = useCart();
   const isAdded = justAdded === produto.id;

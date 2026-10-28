@@ -4,9 +4,10 @@ import { MessageCircle } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { siteConfig } from '@/config/siteConfig';
+import { useSiteConfig } from '@/context/SiteConfigContext';
 
 export function Header() {
+  const siteConfig = useSiteConfig();
   const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
   const tapCountRef = useRef(0);

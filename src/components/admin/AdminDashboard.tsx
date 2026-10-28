@@ -3,16 +3,50 @@
 import { AdminForm } from '@/components/admin/AdminForm';
 import { HeroEditForm } from '@/components/admin/HeroEditForm';
 import { ProductCard } from '@/components/admin/ProductCard';
-import { Package, LogOut, LayoutDashboard, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { StoreSettingsForm } from '@/components/admin/StoreSettingsForm';
+import { Package, LogOut, LayoutDashboard, ShoppingBag, AlertTriangle, Search, Star, X } from 'lucide-react';
+import type { SiteConfig } from '@/config/siteConfig';
 import type { Produto } from '@/types/produto';
 
 interface AdminDashboardProps {
   produtos: Produto[];
   logoutAction: () => Promise<void>;
   heroImage: string;
+  siteConfig: SiteConfig;
 }
 
-export function AdminDashboard({ produtos, logoutAction, heroImage }: AdminDashboardProps) {
+type StatusFilter = 'todos' | 'disponivel' | 'esgotado';
+
+export function AdminDashboard({ produtos, logoutAction, heroImage, siteConfig }: AdminDashboardProps) {
+  const [busca, setBusca] = useState('');
+  const [categoria, setCategoria] = useState('todas');
+  const [status, setStatus] = useState<StatusFilter>('todos');
+  const [soDestaques, setSoDestaques] = useState(false);
+
+  const categorias = useMemo(
+    () => Array.from(new Set(produtos.map((p) => p.categoria).filter(Boolean))).sort((a, b) => a.localeCompare(b)),
+    [produtos]
+  );
+
+  const filtrados = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    return produtos.filter((p) => {
+      if (q && !p.nome.toLowerCase().includes(q) && !(p.descricao ?? '').toLowerCase().includes(q)) return false;
+      if (categoria !== 'todas' && p.categoria !== categoria) return false;
+      if (status !== 'todos' && p.status !== status) return false;
+      if (soDestaques && !p.destaque) return false;
+      return true;
+    });
+  }, [produtos, busca, categoria, status, soDestaques]);
+
+  const temFiltro = busca !== '' || categoria !== 'todas' || status !== 'todos' || soDestaques;
+  function limparFiltros() {
+    setBusca('');
+    setCategoria('todas');
+    setStatus('todos');
+    setSoDestaques(false);
+  }
   const totalProdutos = produtos.length;
   const disponiveis = produtos.filter(p => p.status === 'disponivel').length;
   const esgotados = totalProdutos - disponiveis;
@@ -99,6 +133,7 @@ export function AdminDashboard({ produtos, logoutAction, heroImage }: AdminDashb
           {/* Left: Upload Form & Settings */}
           <div className="lg:sticky lg:top-24 lg:self-start space-y-6">
             <HeroEditForm currentHeroImage={heroImage} />
+            <StoreSettingsForm initial={siteConfig} />
             <AdminForm />
           </div>
 
@@ -107,9 +142,68 @@ export function AdminDashboard({ produtos, logoutAction, heroImage }: AdminDashb
             <div className="flex items-center gap-3 mb-6">
               <h2 className="text-xl font-serif text-white">Produtos Cadastrados</h2>
               <span className="px-2.5 py-1 rounded-full bg-audacia-gold/10 border border-audacia-gold/20 text-audacia-gold text-xs font-medium">
-                {totalProdutos}
+                {temFiltro ? `${filtrados.length} de ${totalProdutos}` : totalProdutos}
               </span>
             </div>
+
+            {/* Busca e filtros */}
+            {produtos.length > 0 && (
+              <div className="mb-6 flex flex-wrap items-center gap-2">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-audacia-gold/50" />
+                  <input
+                    value={busca}
+                    onChange={(e) => setBusca(e.target.value)}
+                    placeholder="Buscar peça..."
+                    aria-label="Buscar peça"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-audacia-gold/20 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-audacia-gold/60"
+                  />
+                </div>
+                <select
+                  value={categoria}
+                  onChange={(e) => setCategoria(e.target.value)}
+                  aria-label="Filtrar por categoria"
+                  className="py-2.5 px-3 rounded-xl bg-white/5 border border-audacia-gold/20 text-white text-sm focus:outline-none"
+                >
+                  <option value="todas" className="bg-[#3a2433]">Todas as categorias</option>
+                  {categorias.map((c) => (
+                    <option key={c} value={c} className="bg-[#3a2433]">{c}</option>
+                  ))}
+                </select>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as StatusFilter)}
+                  aria-label="Filtrar por status"
+                  className="py-2.5 px-3 rounded-xl bg-white/5 border border-audacia-gold/20 text-white text-sm focus:outline-none"
+                >
+                  <option value="todos" className="bg-[#3a2433]">Todos os status</option>
+                  <option value="disponivel" className="bg-[#3a2433]">Disponíveis</option>
+                  <option value="esgotado" className="bg-[#3a2433]">Esgotados</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setSoDestaques((v) => !v)}
+                  aria-pressed={soDestaques}
+                  className={`flex items-center gap-1.5 py-2.5 px-3 rounded-xl border text-sm transition-all ${
+                    soDestaques
+                      ? 'border-audacia-gold bg-audacia-gold/15 text-audacia-gold'
+                      : 'border-white/10 bg-white/5 text-white/50 hover:border-audacia-gold/40'
+                  }`}
+                >
+                  <Star className={`w-4 h-4 ${soDestaques ? 'fill-current' : ''}`} />
+                  Destaques
+                </button>
+                {temFiltro && (
+                  <button
+                    type="button"
+                    onClick={limparFiltros}
+                    className="flex items-center gap-1 py-2.5 px-3 text-xs text-white/50 hover:text-white"
+                  >
+                    <X className="w-3.5 h-3.5" /> Limpar
+                  </button>
+                )}
+              </div>
+            )}
 
             {produtos.length === 0 ? (
               <div className="glassmorphism rounded-2xl p-12 text-center">
@@ -123,9 +217,15 @@ export function AdminDashboard({ produtos, logoutAction, heroImage }: AdminDashb
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {produtos.map((produto) => (
+                {filtrados.map((produto) => (
                   <ProductCard key={produto.id} produto={produto} />
                 ))}
+              </div>
+            )}
+
+            {produtos.length > 0 && filtrados.length === 0 && (
+              <div className="glassmorphism rounded-2xl p-10 text-center text-white/50 text-sm">
+                Nenhuma peça corresponde aos filtros.
               </div>
             )}
           </div>

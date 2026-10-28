@@ -3,9 +3,11 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { Search, Tag, X, ShoppingBag, Check, Share2, Flame, MessageCircle } from 'lucide-react';
-import { siteConfig } from '@/config/siteConfig';
+import { Search, Tag, X, ShoppingBag, Check, Share2, Flame, MessageCircle, Star } from 'lucide-react';
+import { useSiteConfig } from '@/context/SiteConfigContext';
 import { ProductModal } from '@/components/ProductModal';
+import { buildProductPurchaseLink } from '@/lib/whatsapp';
+import { formatBRL } from '@/lib/format';
 import { useCart } from '@/context/CartContext';
 import type { Produto } from '@/types/produto';
 import { CORES_DISPONIVEIS, TAMANHOS_DISPONIVEIS } from '@/types/produto';
@@ -25,6 +27,7 @@ const CATEGORIA_ORDEM = [
 ];
 
 export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
+  const siteConfig = useSiteConfig();
   const [selectedProduct, setSelectedProduct] = useState<Produto | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -95,6 +98,9 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
         p.cores && p.cores.some(c => activeColors.includes(c))
       );
     }
+
+    // Destaques primeiro (sort estável preserva a ordem por data)
+    filtered = [...filtered].sort((a, b) => Number(b.destaque) - Number(a.destaque));
 
     // Agrupamento
     const grouped = new Map<string, Produto[]>();
@@ -340,6 +346,14 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
                             onMouseEnter={() => setHoveredProductId(product.id)}
                             onMouseLeave={() => setHoveredProductId(null)}
                           >
+                            {/* Selo Destaque */}
+                            {product.destaque && !isEsgotado && !isUltimasPecas && (
+                              <div className="absolute top-5 left-5 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-audacia-gold/90 text-audacia-rose-dark text-[11px] font-bold tracking-wider backdrop-blur-md border border-audacia-gold shadow-lg">
+                                <Star className="w-3.5 h-3.5 fill-current" />
+                                DESTAQUE
+                              </div>
+                            )}
+
                             {/* Selo Últimas Peças */}
                             {isUltimasPecas && (
                               <motion.div
@@ -437,7 +451,7 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
                               )}
 
                               <p className={`font-sans font-bold text-lg ${isEsgotado ? 'text-white/40' : 'text-audacia-gold'}`}>
-                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.preco)}
+                                {formatBRL(product.preco)}
                               </p>
                               
                               {/* Aviso de estoque baixo */}
@@ -455,11 +469,7 @@ export function MiniCatalog({ produtosIniciais }: MiniCatalogProps) {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (!isEsgotado) {
-                                      const formattedPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.preco);
-                                      const whatsappUrl = `https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(
-                                        `Olá! Tudo bem? Gostaria de comprar o *${product.nome}* (${formattedPrice}) agora mesmo!`
-                                      )}`;
-                                      window.open(whatsappUrl, '_blank');
+                                      window.open(buildProductPurchaseLink(siteConfig, product), '_blank', 'noopener,noreferrer');
                                     }
                                   }}
                                   className={`relative overflow-hidden px-1 py-3 rounded-xl border transition-all duration-300 font-bold text-[10px] md:text-xs tracking-widest uppercase flex items-center justify-center gap-1.5 ${

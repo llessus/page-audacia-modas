@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { updateProduct } from '@/app/actions';
-import { X, Camera, Save, Tag, ChevronDown, FileText, Ruler, Palette, Package, Plus } from 'lucide-react';
+import { X, Camera, Save, Tag, ChevronDown, FileText, Ruler, Palette, Package, Plus, Star } from 'lucide-react';
+import { ProductPreviewCard } from '@/components/admin/ProductPreviewCard';
 import Image from 'next/image';
 import type { Produto } from '@/types/produto';
 import { TAMANHOS_DISPONIVEIS, CORES_DISPONIVEIS } from '@/types/produto';
@@ -35,6 +36,11 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
   const [stockQty, setStockQty] = useState(1);
   const [extrasToDelete, setExtrasToDelete] = useState<string[]>([]);
   const [newExtraPreviews, setNewExtraPreviews] = useState<string[]>([]);
+  const [nome, setNome] = useState('');
+  const [preco, setPreco] = useState('');
+  const [categoriaSel, setCategoriaSel] = useState(CATEGORIAS_PADRAO[0]);
+  const [novaCategoria, setNovaCategoria] = useState('');
+  const [destaque, setDestaque] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const extraFileRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -49,6 +55,11 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
       setNewExtraPreviews([]);
       const isCustom = produto.categoria && !CATEGORIAS_PADRAO.includes(produto.categoria);
       setShowNovaCategoria(!!isCustom);
+      setNome(produto.nome);
+      setPreco(String(Number(produto.preco)));
+      setCategoriaSel(isCustom ? '__nova__' : (produto.categoria || CATEGORIAS_PADRAO[0]));
+      setNovaCategoria(isCustom ? produto.categoria : '');
+      setDestaque(!!produto.destaque);
       setSelectedSizes(produto.tamanhos || []);
       setSelectedColors(produto.cores || []);
       if (produto.quantidade === -1) {
@@ -126,6 +137,7 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
   }
 
   function handleCategoriaChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setCategoriaSel(e.target.value);
     setShowNovaCategoria(e.target.value === '__nova__');
   }
 
@@ -161,6 +173,7 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
     formData.set('tamanhos', JSON.stringify(selectedSizes));
     formData.set('cores', JSON.stringify(selectedColors));
     formData.set('quantidade', stockMode === 'unlimited' ? '-1' : String(stockQty));
+    formData.set('destaque', String(destaque));
     if (extrasToDelete.length > 0) {
       formData.set('imagensExtrasDeletar', JSON.stringify(extrasToDelete));
     }
@@ -180,9 +193,6 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
     }
   }
 
-  // Determine which categoria value to pre-select
-  const isCustomCategoria = produto.categoria && !CATEGORIAS_PADRAO.includes(produto.categoria);
-  const selectValue = isCustomCategoria ? '__nova__' : (produto.categoria || 'Destaques da Semana');
 
   // Quantas novas extras podemos adicionar (máximo 3 totais)
   const maxNewExtras = Math.max(0, 3 - currentExtras.length);
@@ -252,7 +262,9 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
               name="nome"
               type="text"
               required
-              defaultValue={produto.nome}
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              maxLength={120}
               className={inputClass}
               disabled={isLoading}
             />
@@ -274,7 +286,8 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
                 step="0.01"
                 min="0.01"
                 required
-                defaultValue={Number(produto.preco)}
+                value={preco}
+                onChange={(e) => setPreco(e.target.value)}
                 className={`${inputClass} pl-12`}
                 disabled={isLoading}
               />
@@ -293,7 +306,7 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
               <select
                 id="edit-categoria"
                 name="categoria"
-                defaultValue={selectValue}
+                value={categoriaSel}
                 onChange={handleCategoriaChange}
                 className={`${inputClass} appearance-none cursor-pointer pr-10`}
                 disabled={isLoading}
@@ -315,7 +328,8 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
                 <input
                   name="novaCategoria"
                   type="text"
-                  defaultValue={isCustomCategoria ? produto.categoria : ''}
+                  value={novaCategoria}
+                  onChange={(e) => setNovaCategoria(e.target.value)}
                   placeholder="Digite o nome da nova categoria"
                   className={inputClass}
                   disabled={isLoading}
@@ -620,8 +634,36 @@ export function EditProductModal({ produto, onClose }: EditProductModalProps) {
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-2 pb-4">
+          {/* Destaque */}
+          <label className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-audacia-gold/20 bg-white/5 cursor-pointer select-none">
+            <span className="flex items-center gap-2 text-sm text-white/80">
+              <Star className={`w-4 h-4 ${destaque ? 'fill-audacia-gold text-audacia-gold' : 'text-white/40'}`} />
+              Peça em destaque
+            </span>
+            <input
+              type="checkbox"
+              checked={destaque}
+              onChange={(e) => setDestaque(e.target.checked)}
+              className="h-4 w-4 accent-[#d4af37]"
+              disabled={isLoading}
+            />
+          </label>
+
+          {/* Preview em tempo real */}
+          <ProductPreviewCard
+            data={{
+              nome,
+              preco: Number(String(preco).replace(',', '.')) || 0,
+              categoria: showNovaCategoria ? (novaCategoria.trim() || 'Nova categoria') : categoriaSel,
+              imagem: preview ?? produto.imagem_url,
+              destaque,
+              tamanhos: selectedSizes,
+              cores: selectedColors,
+              quantidade: stockMode === 'unlimited' ? -1 : stockQty,
+            }}
+          />
+
+          {/* Actions */}          <div className="flex gap-3 pt-2 pb-4">
             <button
               type="button"
               onClick={onClose}

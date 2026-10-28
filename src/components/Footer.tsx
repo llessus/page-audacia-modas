@@ -2,9 +2,10 @@
 
 import { Instagram, MapPin } from 'lucide-react';
 import Image from 'next/image';
-import { siteConfig } from '@/config/siteConfig';
+import { useSiteConfig } from '@/context/SiteConfigContext';
 
 export function Footer() {
+  const siteConfig = useSiteConfig();
   return (
     <footer className="bg-audacia-rose-dark pt-16 pb-8 border-t border-audacia-gold/20 relative z-10">
       <div className="container mx-auto px-4 md:px-8">

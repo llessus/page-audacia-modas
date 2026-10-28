@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { X, Trash2, ShoppingBag, Send, Minus, Plus } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { siteConfig } from '@/config/siteConfig';
+import { useSiteConfig } from '@/context/SiteConfigContext';
 
 export function CartDrawer() {
+  const siteConfig = useSiteConfig();
   const { items, removeItem, updateQuantity, clearCart, getTotal, getTotalItems, isOpen, closeCart } = useCart();
 
   const formattedTotal = new Intl.NumberFormat('pt-BR', {

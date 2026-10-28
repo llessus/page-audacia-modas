@@ -2,9 +2,10 @@
 
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
-import { siteConfig } from '@/config/siteConfig';
+import { useSiteConfig } from '@/context/SiteConfigContext';
 
 export function WhatsAppPurchaseSection() {
+  const siteConfig = useSiteConfig();
   // CONFIGURAÇÃO DO WHATSAPP:
   const WHATSAPP_NUMBER = siteConfig.whatsappDDIeDDD; 
   const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Ola! Achei as roupas da ${siteConfig.nomeLoja} muito interessantes e gostaria de tirar algumas duvidas com o atendimento!`)}`;

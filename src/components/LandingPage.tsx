@@ -13,15 +13,19 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { CartToast } from '@/components/CartToast';
 import { BackToTop } from '@/components/BackToTop';
 import { TrustStrip, WaveDividerDown, WaveDividerUp } from '@/components/Decorators';
+import { SiteConfigProvider } from '@/context/SiteConfigContext';
+import type { SiteConfig } from '@/config/siteConfig';
 import type { Produto } from '@/types/produto';
 
 interface LandingPageProps {
   produtos: Produto[];
   heroImage: string;
+  config: SiteConfig;
 }
 
-export function LandingPage({ produtos, heroImage }: LandingPageProps) {
+export function LandingPage({ produtos, heroImage, config }: LandingPageProps) {
   return (
+    <SiteConfigProvider config={config}>
     <main className="w-full relative overflow-x-hidden">
       <Header />
       <HeroSection heroImage={heroImage} />
@@ -39,5 +43,6 @@ export function LandingPage({ produtos, heroImage }: LandingPageProps) {
       <CartToast />
       <BackToTop />
     </main>
+    </SiteConfigProvider>
   );
 }

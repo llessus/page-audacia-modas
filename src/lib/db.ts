@@ -1,5 +1,7 @@
 import { sql } from '@vercel/postgres';
 import type { Produto } from '@/types/produto';
+import { siteConfig as defaultSiteConfig, type SiteConfig } from '@/config/siteConfig';
+import { siteConfigSchema } from '@/lib/validation';
 
 // Helper para montar um Produto completo a partir de uma row do banco
 function rowToProduto(row: Record<string, unknown>): Produto {
@@ -15,6 +17,7 @@ function rowToProduto(row: Record<string, unknown>): Produto {
     quantidade: row.quantidade != null ? Number(row.quantidade) : -1,
     tamanhos: Array.isArray(row.tamanhos) ? row.tamanhos as string[] : [],
     cores: Array.isArray(row.cores) ? row.cores as string[] : [],
+    destaque: Boolean(row.destaque),
     imagens_extras: Array.isArray(row.imagens_extras)
       ? (row.imagens_extras as string[])
       : [],
@@ -25,7 +28,7 @@ export async function getProdutos(): Promise<Produto[]> {
   const { rows } = await sql`
     SELECT
       p.id, p.nome, p.preco, p.imagem_url, p.categoria, p.descricao,
-      p.status, p.created_at, p.quantidade, p.tamanhos, p.cores,
+      p.status, p.created_at, p.quantidade, p.tamanhos, p.cores, p.destaque,
       COALESCE(
         (SELECT array_agg(pi.imagem_url ORDER BY pi.ordem)
          FROM produto_imagens pi WHERE pi.produto_id = p.id),
@@ -41,7 +44,7 @@ export async function getProdutosDisponiveis(): Promise<Produto[]> {
   const { rows } = await sql`
     SELECT
       p.id, p.nome, p.preco, p.imagem_url, p.categoria, p.descricao,
-      p.status, p.created_at, p.quantidade, p.tamanhos, p.cores,
+      p.status, p.created_at, p.quantidade, p.tamanhos, p.cores, p.destaque,
       COALESCE(
         (SELECT array_agg(pi.imagem_url ORDER BY pi.ordem)
          FROM produto_imagens pi WHERE pi.produto_id = p.id),
@@ -58,7 +61,7 @@ export async function getProdutoById(id: string): Promise<Produto | null> {
   const { rows } = await sql`
     SELECT
       p.id, p.nome, p.preco, p.imagem_url, p.categoria, p.descricao,
-      p.status, p.created_at, p.quantidade, p.tamanhos, p.cores,
+      p.status, p.created_at, p.quantidade, p.tamanhos, p.cores, p.destaque,
       COALESCE(
         (SELECT array_agg(pi.imagem_url ORDER BY pi.ordem)
          FROM produto_imagens pi WHERE pi.produto_id = p.id),
@@ -80,5 +83,28 @@ export async function getHeroImage(): Promise<string> {
   } catch (error) {
     // Retorna fallback caso a tabela não exista ainda ou haja outro erro
     return '/images/product_3.png';
+  }
+}
+
+/**
+ * Configurações da loja: valores padrão de siteConfig.ts sobrescritos pelo
+ * JSON salvo em config_site (chave 'site_config'). Nunca lança erro: em caso
+ * de falha/JSON inválido, usa os padrões.
+ */
+export async function getSiteConfig(): Promise<SiteConfig> {
+  try {
+    const { rows } = await sql`
+      SELECT valor FROM config_site WHERE chave = 'site_config' LIMIT 1
+    `;
+    if (!rows[0]?.valor) return defaultSiteConfig;
+    const saved = JSON.parse(rows[0].valor as string);
+    const parsed = siteConfigSchema.safeParse({
+      ...defaultSiteConfig,
+      ...saved,
+      hero: { ...defaultSiteConfig.hero, ...(saved?.hero ?? {}) },
+    });
+    return parsed.success ? parsed.data : defaultSiteConfig;
+  } catch {
+    return defaultSiteConfig;
   }
 }

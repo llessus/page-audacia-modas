@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Star, Quote } from 'lucide-react';
-import { siteConfig } from '@/config/siteConfig';
+import { useSiteConfig } from '@/context/SiteConfigContext';
 
 interface Depoimento {
   nome: string;
@@ -100,6 +100,7 @@ function getAvatarColor(name: string) {
 }
 
 export function TestimonialsSection() {
+  const siteConfig = useSiteConfig();
   return (
     <section className="py-24 relative z-10 overflow-hidden">
       {/* Background glow */}
