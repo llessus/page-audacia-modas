@@ -82,6 +82,17 @@ export function BioLinkButton({
       </span>
 
       <span className="flex flex-col items-center text-center px-3 min-w-0 flex-1">
+        {badgeText && (
+          <span
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 mb-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest ${
+              isPrimary
+                ? 'bg-[#23141d]/15 text-[#23141d] border border-[#23141d]/20'
+                : 'bg-audacia-gold/20 text-audacia-gold-light border border-audacia-gold/40'
+            }`}
+          >
+            {badgeText}
+          </span>
+        )}
         <span
           className={`text-sm sm:text-base tracking-wide ${
             isPrimary

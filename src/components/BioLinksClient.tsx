@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import { ShoppingBag, MapPin, Instagram, Sparkles } from 'lucide-react';
+import { ShoppingBag, MapPin, Instagram, Sparkles, Crown } from 'lucide-react';
 import type { SiteConfig } from '@/config/siteConfig';
 import type { Produto } from '@/types/produto';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
@@ -83,11 +83,22 @@ export function BioLinksClient({ config, produtos }: BioLinksClientProps) {
 
         {/* 4. Lista de Botões de Ação */}
         <motion.nav aria-label="Links principais da loja" variants={itemVariants} className="space-y-3">
-          {/* WhatsApp da Loja em destaque dourado enquanto o catálogo está em breve */}
+          {/* 1. Grupo VIP do WhatsApp em 1º lugar (destaque dourado) */}
+          <BioLinkButton
+            href={BIO_CONFIG.grupoVipUrl}
+            external
+            variant="primary"
+            badgeText="✨ Ofertas Exclusivas"
+            title="Grupo VIP no WhatsApp"
+            subtitle="Receba novidades e lançamentos em primeira mão"
+            icon={<Crown className="w-5 h-5" />}
+          />
+
+          {/* 2. WhatsApp da Loja também em destaque dourado */}
           <BioLinkButton
             href={whatsappHref}
             external
-            variant={catalogoEmBreve ? 'primary' : 'secondary'}
+            variant="primary"
             title="Atendimento no WhatsApp"
             subtitle="Tire dúvidas de tamanhos e peça fotos dos looks"
             icon={<WhatsAppIcon className="w-5 h-5" />}

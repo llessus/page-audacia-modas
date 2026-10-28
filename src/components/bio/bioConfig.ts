@@ -16,6 +16,9 @@ export const BIO_CONFIG = {
    */
   catalogoEmBreve: true,
 
+  /** Link oficial do Grupo VIP de Vendas no WhatsApp */
+  grupoVipUrl: 'https://chat.whatsapp.com/FGj8S6pQbzPKiBmNPfIV9B?s=cl&p=i&mlu=4&ilr=4',
+
   campanha: {
     badge: 'Nova Coleção',
     titulo: 'Peças exclusivas da semana ✨',
