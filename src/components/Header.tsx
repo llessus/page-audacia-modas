@@ -67,22 +67,34 @@ export function Header() {
           />
         </div>
 
-        {/* WhatsApp Button */}
-        <a
-          href={`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(`Ola! Achei a ${siteConfig.nomeLoja} interessante e gostaria de ver as roupas e tirar algumas duvidas.`)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`group flex items-center gap-2 px-6 py-2.5 rounded-full border transition-all duration-300 ${
-            isScrolled 
-              ? 'border-audacia-gold text-audacia-gold hover:bg-audacia-gold hover:text-audacia-rose-dark' 
-              : 'border-white/30 text-white hover:border-audacia-gold hover:text-audacia-gold'
-          }`}
-        >
-          <span className="hidden md:inline font-medium text-sm tracking-wide transition-colors">
-            Atendimento
-          </span>
-          <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-        </a>
+        {/* Actions: Início + WhatsApp */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 min-h-[42px] px-3.5 sm:px-4 py-2 rounded-full bg-white/5 border border-white/20 text-white/85 hover:border-audacia-gold hover:text-audacia-gold text-xs sm:text-sm font-medium transition-all"
+            aria-label="Voltar para a página inicial de links"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Início</span>
+          </Link>
+
+          {/* WhatsApp Button */}
+          <a
+            href={`https://wa.me/${siteConfig.whatsappDDIeDDD}?text=${encodeURIComponent(`Ola! Achei a ${siteConfig.nomeLoja} interessante e gostaria de ver as roupas e tirar algumas duvidas.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`group flex items-center justify-center gap-2 min-h-[42px] px-4 sm:px-6 py-2.5 rounded-full border transition-all duration-300 ${
+              isScrolled 
+                ? 'border-audacia-gold text-audacia-gold hover:bg-audacia-gold hover:text-audacia-rose-dark' 
+                : 'border-white/30 text-white hover:border-audacia-gold hover:text-audacia-gold'
+            }`}
+          >
+            <span className="hidden md:inline font-medium text-sm tracking-wide transition-colors">
+              Atendimento
+            </span>
+            <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          </a>
+        </div>
       </div>
     </header>
   );
