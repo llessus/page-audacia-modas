@@ -15,7 +15,7 @@ export const BIO_CONFIG = {
     subtitulo:
       'Looks selecionados com caimento impecável. Atendimento personalizado pelo WhatsApp ou em nossa loja física.',
     ctaTexto: 'Explorar novidades',
-    ctaHref: '/#catalogo',
+    ctaHref: '/catalogo#catalogo',
   },
 
   /**

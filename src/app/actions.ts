@@ -27,6 +27,7 @@ async function requireAdmin(): Promise<ActionResponse | null> {
 function revalidateAll() {
   revalidatePath('/admin/dashboard');
   revalidatePath('/');
+  revalidatePath('/catalogo');
   revalidatePath('/bio');
 }
 

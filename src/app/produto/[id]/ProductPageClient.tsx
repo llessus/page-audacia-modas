@@ -37,13 +37,19 @@ export function ProductPageClient({ produto }: ProductPageClientProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#3a2433] via-audacia-rose-dark to-audacia-rose flex flex-col">
       {/* Top bar */}
-      <header className="px-4 md:px-8 py-4 flex items-center gap-4">
+      <header className="px-4 md:px-8 py-4 flex items-center justify-between gap-4">
         <a
-          href="/"
-          className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm"
+          href="/catalogo#catalogo"
+          className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm min-h-[44px]"
         >
           <ArrowLeft className="w-4 h-4" />
           Voltar ao Catálogo
+        </a>
+        <a
+          href="/"
+          className="text-xs text-audacia-gold-light hover:underline min-h-[44px] flex items-center"
+        >
+          Página Inicial
         </a>
       </header>
 

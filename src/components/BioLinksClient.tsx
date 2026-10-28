@@ -94,7 +94,7 @@ export function BioLinksClient({ config, produtos, heroImage }: BioLinksClientPr
         <motion.nav aria-label="Links principais da loja" variants={itemVariants} className="space-y-3">
           {/* Principal: Catálogo Online (dourado com contraste escuro corrigido) */}
           <BioLinkButton
-            href="/"
+            href="/catalogo"
             variant="primary"
             title="Catálogo Online Completo"
             subtitle={
@@ -141,7 +141,7 @@ export function BioLinksClient({ config, produtos, heroImage }: BioLinksClientPr
         {/* Rodapé autoral */}
         <motion.footer variants={itemVariants} className="pt-2 text-center">
           <Link
-            href="/"
+            href="/catalogo"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[11px] text-white/65 hover:text-audacia-gold-light hover:border-audacia-gold/30 transition-all min-h-[40px]"
           >
             <Sparkles className="w-3 h-3 text-audacia-gold" />

@@ -35,7 +35,7 @@ export function BioProductCarousel({ produtos }: BioProductCarouselProps) {
           </p>
         </div>
         <Link
-          href="/#catalogo"
+          href="/catalogo#catalogo"
           className="inline-flex items-center gap-1 text-xs font-semibold text-audacia-gold-light hover:underline min-h-[44px] px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-audacia-gold rounded-lg"
         >
           <span>Ver tudo</span>
